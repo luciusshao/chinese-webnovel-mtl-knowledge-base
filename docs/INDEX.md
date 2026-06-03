@@ -31,6 +31,11 @@
 - [Common Action And Cultivation Verbs](reference/common-action-and-cultivation-verbs.md)
 - [Common Items And Resources](reference/common-items-and-resources.md)
 - [Common Emotional And Reaction Phrases](reference/common-emotional-and-reaction-phrases.md)
+- [Common Ranks And Status Terms](reference/common-ranks-and-status.md)
+- [Common Alchemy And Pill Terms](reference/common-alchemy-and-pill-terms.md)
+- [Common Formations And Restrictions](reference/common-formations-and-restrictions.md)
+- [Common Spirit Beast And Monster Terms](reference/common-spirit-beast-and-monster-terms.md)
+- [Common Government And Court Terms](reference/common-government-and-court-terms.md)
 
 ## Prompts
 

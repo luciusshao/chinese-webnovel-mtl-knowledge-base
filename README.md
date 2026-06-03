@@ -96,6 +96,14 @@ The repo now also includes starter references for:
 - common items and resources;
 - repeated emotional and reaction phrases.
 
+It also now covers:
+
+- rank and disciple hierarchy terms;
+- alchemy and pill terminology;
+- formation and seal terminology;
+- spirit beast and monster vocabulary;
+- government and court titles.
+
 ## License
 
 This repository uses the MIT License for repository content unless a specific file states otherwise.
