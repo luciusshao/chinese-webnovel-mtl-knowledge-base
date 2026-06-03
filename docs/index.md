@@ -8,6 +8,12 @@ This is a public, community-editable knowledge base for making machine-translate
 
 If you want to see the product experience first and browse the public knowledge base later, start with the live demo above.
 
+## Download Or Contribute Glossaries
+
+- [Glossary Library](glossary-library.md)
+- [How To Download And Edit Glossaries](how-to-download-and-edit-glossaries.md)
+- [Contribution Options](contribution-options.md)
+
 ## Start Reading
 
 - [Getting Started](getting-started.md)
@@ -27,6 +33,7 @@ If you want to see the product experience first and browse the public knowledge 
 - [Quick Term Submission Template](forms/quick-term-submission-template.md)
 - [Batch Glossary Submission Template](forms/batch-glossary-submission-template.md)
 - [Minimal Mobile Template](forms/minimal-mobile-template.md)
+- [Glossary Library](glossary-library.md)
 
 ### I can use GitHub
 

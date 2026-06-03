@@ -25,6 +25,9 @@ This page is the full navigation hub for the public knowledge base.
 - [Quick Term Submission Template](forms/quick-term-submission-template.md)
 - [Batch Glossary Submission Template](forms/batch-glossary-submission-template.md)
 - [Minimal Mobile Template](forms/minimal-mobile-template.md)
+- [Glossary Library](glossary-library.md)
+- [How To Download And Edit Glossaries](how-to-download-and-edit-glossaries.md)
+- [Contribution Options](contribution-options.md)
 
 ### I can use GitHub
 
