@@ -87,6 +87,15 @@ Current starter coverage includes:
 - wuxia;
 - broad cultivation / xiuxian reading workflows.
 
+## Terminology Coverage
+
+The repo now also includes starter references for:
+
+- honorifics and forms of address;
+- action and cultivation verbs;
+- common items and resources;
+- repeated emotional and reaction phrases.
+
 ## License
 
 This repository uses the MIT License for repository content unless a specific file states otherwise.

@@ -27,6 +27,10 @@
 - [Common Xianxia Terms](reference/common-xianxia-terms.md)
 - [Cultivation Realm Patterns](reference/cultivation-realm-patterns.md)
 - [Sect, Clan, And Title Patterns](reference/sect-clan-title-patterns.md)
+- [Common Address And Honorifics](reference/common-address-and-honorifics.md)
+- [Common Action And Cultivation Verbs](reference/common-action-and-cultivation-verbs.md)
+- [Common Items And Resources](reference/common-items-and-resources.md)
+- [Common Emotional And Reaction Phrases](reference/common-emotional-and-reaction-phrases.md)
 
 ## Prompts
 
