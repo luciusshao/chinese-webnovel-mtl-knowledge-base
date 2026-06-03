@@ -76,8 +76,11 @@ For ordinary users who do not know GitHub:
 Start here:
 
 - [Contribute Without GitHub](docs/contribute-without-github.md)
+- [How To Submit To The Maintainer](docs/how-to-submit-to-maintainer.md)
 - [Glossary Submission Template](docs/forms/glossary-submission-template.md)
 - [Quick Term Submission Template](docs/forms/quick-term-submission-template.md)
+- [Batch Glossary Submission Template](docs/forms/batch-glossary-submission-template.md)
+- [Minimal Mobile Template](docs/forms/minimal-mobile-template.md)
 
 ## Suggested Next Contributions
 

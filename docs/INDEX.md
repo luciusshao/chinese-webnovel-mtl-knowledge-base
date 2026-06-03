@@ -16,8 +16,11 @@ This is a public, community-editable knowledge base for making machine-translate
 ### I do not know GitHub
 
 - [Contribute Without GitHub](contribute-without-github.md)
+- [How To Submit To The Maintainer](how-to-submit-to-maintainer.md)
 - [Glossary Submission Template](forms/glossary-submission-template.md)
 - [Quick Term Submission Template](forms/quick-term-submission-template.md)
+- [Batch Glossary Submission Template](forms/batch-glossary-submission-template.md)
+- [Minimal Mobile Template](forms/minimal-mobile-template.md)
 
 ### I can use GitHub
 
