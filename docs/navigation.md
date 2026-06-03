@@ -1,6 +1,6 @@
-# Chinese Webnovel MTL Knowledge Base
+# Documentation Navigation
 
-This is a public, community-editable knowledge base for making machine-translated Chinese web novels more readable.
+This page is the full navigation hub for the public knowledge base.
 
 ## Start Reading
 
@@ -9,7 +9,11 @@ This is a public, community-editable knowledge base for making machine-translate
 - [Xianxia Reading Guide](guides/xianxia-reading-guide.md)
 - [Wuxia Reading Guide](guides/wuxia-reading-guide.md)
 - [Xiuxian / Cultivation Reading Guide](guides/xiuxian-reading-guide.md)
-- [Documentation Index](INDEX.md)
+- [Pages Home](index.md)
+
+## Demo Translation
+
+- [Open Demo Translation](https://www.xiandaos.com/demo)
 
 ## Quick Contribution
 

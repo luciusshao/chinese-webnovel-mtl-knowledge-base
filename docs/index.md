@@ -2,6 +2,12 @@
 
 This is a public, community-editable knowledge base for making machine-translated Chinese web novels more readable.
 
+## Demo Translation
+
+[Open Demo Translation](https://www.xiandaos.com/demo)
+
+If you want to see the product experience first and browse the public knowledge base later, start with the live demo above.
+
 ## Start Reading
 
 - [Getting Started](getting-started.md)
