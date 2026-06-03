@@ -21,17 +21,20 @@ This repository is meant to be public, easy to browse, and easy to contribute to
 
 ## Start Here
 
+- [Docs Index](docs/INDEX.md)
 - [Getting Started](docs/getting-started.md)
 - [5 Practical Tips](docs/guides/5-practical-tips.md)
 - [Glossary Principles](docs/glossary/glossary-principles.md)
 - [Prompt Templates](docs/prompts/basic-chapter-translation.md)
 - [Contribution Guide](CONTRIBUTING.md)
 - [Content Policy](docs/policies/content-policy.md)
+- [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
 ```text
 docs/
+  INDEX.md
   getting-started.md
   guides/
   glossary/
@@ -58,6 +61,13 @@ If you want this repo to stay broadly useful, keep content:
 - generic rather than tool-locked;
 - practical rather than promotional;
 - safe from copyright problems.
+
+## Suggested Next Contributions
+
+- glossary pages for specific genres;
+- pages for common title, rank, and sect naming patterns;
+- examples of bad vs good prompt design;
+- notes on frequent MTL failure modes.
 
 ## License
 
