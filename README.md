@@ -22,7 +22,7 @@ This repository is meant to be public, easy to browse, and easy to contribute to
 ## Start Here
 
 - [Pages Home](docs/index.md)
-- [Docs Index](docs/INDEX.md)
+- [Docs Navigation](docs/navigation.md)
 - [Getting Started](docs/getting-started.md)
 - [5 Practical Tips](docs/guides/5-practical-tips.md)
 - [Building A Reading Workflow](docs/guides/building-a-reading-workflow.md)
@@ -36,7 +36,8 @@ This repository is meant to be public, easy to browse, and easy to contribute to
 
 ```text
 docs/
-  INDEX.md
+  index.md
+  navigation.md
   getting-started.md
   guides/
   glossary/
