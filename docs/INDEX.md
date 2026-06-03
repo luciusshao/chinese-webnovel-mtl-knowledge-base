@@ -14,10 +14,16 @@
 - [Building A Reading Workflow](guides/building-a-reading-workflow.md)
 - [Name Translation Strategies](guides/name-translation-strategies.md)
 - [How To Contribute A Glossary](guides/how-to-contribute-a-glossary.md)
+- [Xianxia Reading Guide](guides/xianxia-reading-guide.md)
+- [Wuxia Reading Guide](guides/wuxia-reading-guide.md)
+- [Xiuxian / Cultivation Reading Guide](guides/xiuxian-reading-guide.md)
 
 ## Glossary
 
 - [Glossary Principles](glossary/glossary-principles.md)
+- [Xianxia Core Terms](glossary/xianxia-core-terms.md)
+- [Wuxia Core Terms](glossary/wuxia-core-terms.md)
+- [Xiuxian / Cultivation Core Terms](glossary/xiuxian-core-terms.md)
 - [Common Xianxia Terms](reference/common-xianxia-terms.md)
 - [Cultivation Realm Patterns](reference/cultivation-realm-patterns.md)
 - [Sect, Clan, And Title Patterns](reference/sect-clan-title-patterns.md)

@@ -79,6 +79,14 @@ If you want this repository to become broadly useful, keep pushing it toward:
 - contributor-friendly templates;
 - public-reference documentation rather than tool promotion.
 
+## Genre Coverage
+
+Current starter coverage includes:
+
+- xianxia;
+- wuxia;
+- broad cultivation / xiuxian reading workflows.
+
 ## License
 
 This repository uses the MIT License for repository content unless a specific file states otherwise.
