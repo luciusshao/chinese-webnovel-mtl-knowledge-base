@@ -2,3 +2,38 @@ title: Chinese Webnovel MTL Knowledge Base
 description: Public glossary and workflow references for reading machine-translated Chinese web novels.
 theme: minima
 markdown: kramdown
+header_pages:
+  - navigation.md
+  - getting-started.md
+  - contribute-without-github.md
+  - how-to-submit-to-maintainer.md
+show_excerpts: false
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+  - scope:
+      path: "guides"
+    values:
+      layout: page
+  - scope:
+      path: "glossary"
+    values:
+      layout: page
+  - scope:
+      path: "reference"
+    values:
+      layout: page
+  - scope:
+      path: "prompts"
+    values:
+      layout: page
+  - scope:
+      path: "policies"
+    values:
+      layout: page
+  - scope:
+      path: "forms"
+    values:
+      layout: page
