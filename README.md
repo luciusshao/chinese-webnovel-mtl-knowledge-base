@@ -21,6 +21,7 @@ This repository is meant to be public, easy to browse, and easy to contribute to
 
 ## Start Here
 
+- [Pages Home](docs/index.md)
 - [Docs Index](docs/INDEX.md)
 - [Getting Started](docs/getting-started.md)
 - [5 Practical Tips](docs/guides/5-practical-tips.md)
@@ -62,6 +63,21 @@ If you want this repo to stay broadly useful, keep content:
 - generic rather than tool-locked;
 - practical rather than promotional;
 - safe from copyright problems.
+
+## Non-Technical Contribution Path
+
+For ordinary users who do not know GitHub:
+
+- read the public Pages docs;
+- copy a simple glossary template;
+- fill in terms in plain text;
+- send the filled template to the maintainer for import.
+
+Start here:
+
+- [Contribute Without GitHub](docs/contribute-without-github.md)
+- [Glossary Submission Template](docs/forms/glossary-submission-template.md)
+- [Quick Term Submission Template](docs/forms/quick-term-submission-template.md)
 
 ## Suggested Next Contributions
 

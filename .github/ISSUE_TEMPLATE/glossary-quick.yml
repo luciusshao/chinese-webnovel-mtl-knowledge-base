@@ -1,0 +1,49 @@
+name: Quick glossary contribution
+description: Add one term or a small group of terms
+title: "[Glossary] "
+labels:
+  - glossary
+body:
+  - type: dropdown
+    id: genre
+    attributes:
+      label: Genre
+      options:
+        - xianxia
+        - wuxia
+        - xiuxian / cultivation
+        - historical fantasy
+        - mixed / other
+    validations:
+      required: true
+  - type: input
+    id: chinese_term
+    attributes:
+      label: Chinese term
+      placeholder: 例：天劫
+    validations:
+      required: true
+  - type: input
+    id: preferred_english
+    attributes:
+      label: Preferred English
+      placeholder: heavenly tribulation
+    validations:
+      required: true
+  - type: input
+    id: alternatives
+    attributes:
+      label: Alternatives
+      placeholder: celestial tribulation, sky calamity
+  - type: textarea
+    id: reason
+    attributes:
+      label: Reason
+      placeholder: Explain why this translation is better or more standard.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      placeholder: Optional context, caveats, or examples.

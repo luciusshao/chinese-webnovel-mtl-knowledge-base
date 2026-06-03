@@ -35,6 +35,21 @@ Small PRs are preferred. Good examples:
 - document one common MTL failure mode;
 - clarify one policy page.
 
+## If The Contributor Does Not Know GitHub
+
+Use the non-technical flow instead:
+
+1. open the public docs page;
+2. copy a glossary template;
+3. fill it in as plain text;
+4. let a maintainer convert it into a repo contribution.
+
+Reference pages:
+
+- `docs/contribute-without-github.md`
+- `docs/forms/glossary-submission-template.md`
+- `docs/forms/quick-term-submission-template.md`
+
 ## Review Standard
 
 PRs should be accepted when they are:
