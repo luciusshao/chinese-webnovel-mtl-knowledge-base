@@ -1,0 +1,16 @@
+---
+---
+
+@import "minima";
+
+/* Hide Jekyll/Minima auto-generated page title blocks.
+ * The markdown pages already contain their own H1 headings. */
+.post-header,
+.page-heading {
+  display: none;
+}
+
+/* Keep the top nav compact so the header does not feel like page content. */
+.site-nav .page-link {
+  font-size: 14px;
+}
