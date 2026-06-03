@@ -24,6 +24,7 @@ This repository is meant to be public, easy to browse, and easy to contribute to
 - [Docs Index](docs/INDEX.md)
 - [Getting Started](docs/getting-started.md)
 - [5 Practical Tips](docs/guides/5-practical-tips.md)
+- [Building A Reading Workflow](docs/guides/building-a-reading-workflow.md)
 - [Glossary Principles](docs/glossary/glossary-principles.md)
 - [Prompt Templates](docs/prompts/basic-chapter-translation.md)
 - [Contribution Guide](CONTRIBUTING.md)
@@ -68,6 +69,15 @@ If you want this repo to stay broadly useful, keep content:
 - pages for common title, rank, and sect naming patterns;
 - examples of bad vs good prompt design;
 - notes on frequent MTL failure modes.
+
+## Good Public Direction
+
+If you want this repository to become broadly useful, keep pushing it toward:
+
+- shared terminology standards;
+- reusable reading workflows;
+- contributor-friendly templates;
+- public-reference documentation rather than tool promotion.
 
 ## License
 
