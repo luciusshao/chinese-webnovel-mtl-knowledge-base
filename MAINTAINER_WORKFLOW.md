@@ -18,8 +18,12 @@ After the one-time setup in §0 and §3.0, every batch is just:
 ├────────────────────────────────────────────────────────────────┤
 │  1. REVIEW                                                     │
 │     Open the response sheet. For each new row, set `status`:   │
-│        approved | merged | rejected | dup | pending            │
-│     (See §2 for the rules. `pending` = "I'll come back.")      │
+│        approved | replace | rejected | (pending = skip)        │
+│     · approved → publish as a new term                         │
+│     · replace  → overwrite the existing English with this one  │
+│     · rejected → ignore (junk / not better than existing)      │
+│     · pending  → "I'll come back". sync.py ignores it.         │
+│     (See §2 for the full table.)                               │
 ├────────────────────────────────────────────────────────────────┤
 │  2. ONE-LINER                                                  │
 │     cd <repo> && ./scripts/auto_sync.sh                        │
@@ -37,9 +41,10 @@ After the one-time setup in §0 and §3.0, every batch is just:
 **Volume rule of thumb**: do steps 1-3 in one sitting once a week. The shell
 step is ~10 seconds; the review is the only thing that takes time.
 
-**If `auto_sync.sh` reports a CLASH**, it stops *before* commit. Resolve in the
-Sheet (set `status=rejected`, or edit `preferred_english` directly in the CSV)
-then re-run. See §2.3 for the decision matrix.
+**If `auto_sync.sh` reports a CLASH**, it stops *before* commit. Resolve in
+the Sheet by either changing the row's `status` from `approved` to `replace`
+(adopt the new English) or to `rejected` (keep the existing English) and
+re-run. See §2 for the full table.
 
 > Want the manual flow instead? §3.2 keeps it documented (export CSV, run
 > `sync.py` by hand, git by hand). Use it if Python or the SA key is unavailable.
@@ -63,7 +68,7 @@ In the sheet, append four columns to the right of the form-generated columns:
 
 | Column        | Values                                                 | Purpose                                        |
 | ------------- | ------------------------------------------------------ | ---------------------------------------------- |
-| `status`      | `pending` / `approved` / `rejected` / `merged` / `dup` | Review state                                   |
+| `status`      | `approved` / `replace` / `rejected` / `dup` / `merged` / `pending` / blank | Review state (only `approved` & `replace` cause writes) |
 | `reviewer`    | your initials                                          | Who reviewed it                                |
 | `reviewed_at` | YYYY-MM-DD                                             | Date of review                                 |
 | `notes`       | free text                                              | Why approved/rejected, conflict resolution     |
@@ -173,61 +178,68 @@ re-enable manual submissions through the live form URL.
 
 ## 2. Review SOP — per submission
 
-Decide which of the five statuses applies. **Use status `pending` only as the default for a row you have not looked at yet.**
+For each row, set `status` to one of these values. **Only `approved` and
+`replace` cause writes to the public CSVs**; everything else is purely an
+audit trail.
 
-### 2.1 `dup` — exact duplicate
+| `status`   | What sync.py does                                                                  | When to use                                                                                       |
+| ---------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `approved` | Append the term to `<genre>-core-terms.csv`. **Refuses to overwrite** any existing chinese (CLASH). | Fresh, useful term. Default verdict for anything you'd publish as-is.                             |
+| `replace`  | Like `approved`, but if the chinese already exists with a different English, **overwrite** it; the old English is auto-archived in the row's `notes`. | The submission proposes a clearly better translation than what's currently published. Use sparingly. |
+| `rejected` | Ignore. Row stays in the Sheet for the audit trail.                                | Trolling, copyrighted content, off-policy, one-off character names with no reuse value.            |
+| `dup`      | Ignore.                                                                            | (Optional shorthand — sync.py auto-detects exact duplicates anyway.)                              |
+| `merged`   | Ignore.                                                                            | Use this AFTER a successful run, to flip just-pushed `approved`/`replace` rows so the next sync skips them. |
+| `pending` (or blank) | Ignore.                                                                | Default — you haven't gotten to this row yet. There is no SLA.                                   |
 
-The submission matches an existing row on **both** `chinese` and `preferred_english`.
+**Key insight**: you do not need to manually check whether a chinese already
+exists in the public CSVs. `sync.py` does that for you:
 
-- Set `status = dup`. No file change. Done.
+- exact duplicate (same chinese + same English) → silently skipped (DUP)
+- same chinese + different English + you wrote `approved` → blocked as CLASH;
+  you decide later whether to upgrade to `replace` or `rejected`
+- same chinese + different English + you wrote `replace` → overwrites the
+  existing row; the previous English lands in the new `notes` value as
+  `was: <old English>`, with any prior notes preserved as `(prev: ...)`.
 
-### 2.2 `merged` — note enrichment
+So in practice your reviewing flow is just:
 
-The submission's `chinese` already exists, but it brings useful new context in
-the `reason` field worth preserving.
+1. Read the submitted Chinese + English + Reason.
+2. Decide: is this term worth publishing? → `approved`.
+3. If you already know the existing English is worse → `replace` instead.
+4. If junk → `rejected`. If unsure → leave as `pending`.
 
-- Open the corresponding `docs/downloads/<genre>-core-terms.csv`.
-- Find the existing row.
-- Append or rewrite the `notes` column to incorporate the user's reasoning
-  (keep it short — one line).
-- Set `status = merged` in the sheet.
+That's the whole job. `sync.py` will yell at you (CLASH) only when your
+verdict requires extra information you can fix in 1 click.
 
-### 2.3 Conflict — same Chinese, different recommended English
-
-The hardest case. Decide which English form should be the recommended one.
-
-| Sub-case                            | Recommended action                                                                               |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------ |
-| New form is clearly better          | Update `preferred_english` in the CSV. Set `status = approved`. Mention old form in `notes` if useful (e.g. `notes: "was: ascension; transcendence reads cleaner"`). |
-| Existing form is better             | Set `status = rejected` with a one-line reason. No CSV change.                                   |
-| Unclear / both common               | Keep existing as `preferred_english`. Set `status = rejected` with a one-line reason.            |
-| The submission is genre-mislabeled  | Move it to the correct CSV, then apply the rule above.                                           |
-
-Always add a one-line `notes` entry when overriding the existing recommendation.
-
-### 2.4 `approved` — fresh entry
-
-The `chinese` term is not in any CSV. Append the row to
-`docs/downloads/<genre>-core-terms.csv`.
-
-- Make sure `genre` matches the file you are appending to.
-- The submitted `reason` becomes the CSV's `notes` column.
-
-### 2.5 `rejected`
-
-Reasons that justify a rejection:
+### 2.x Reasons that justify `rejected`
 
 - copyrighted chapter content;
 - one-off character names from a single novel that have no broader value;
 - unsafe / off-policy content;
-- submitter clearly trolling.
+- submitter clearly trolling;
+- existing English is fine and the submitted alternative isn't clearly better.
 
-Set `status = rejected` and a brief `notes`. Never delete from the sheet —
-keeping the trail helps spot patterns of abuse later.
+Never delete a rejected row from the Sheet — the trail helps spot patterns
+of abuse later.
 
-### 2.6 `pending` — defer
+### 2.x Tips on `replace`
 
-If you don't have time, leave it as `pending` and move on. There is no SLA.
+When you set `status = replace`, use the `notes` column to capture *why* the
+new form wins (one line):
+
+```
+status = replace
+notes  = more common in cultivation novels
+```
+
+After the next sync, the public CSV row becomes:
+
+```
+xianxia,洞府,cave abode,more common in cultivation novels; was: cave residence
+```
+
+so future readers can see both the chosen English and the previous
+recommendation in one place.
 
 ---
 
@@ -326,7 +338,7 @@ the just-pushed rows from `approved` → `merged` so the next run skips them.
 | --------------------- | --------------------------------------------- | ---------------------------------------------------------------- |
 | Working tree dirty    | Aborts before pulling Sheet                   | Commit/stash unrelated changes, re-run                           |
 | Sheet auth fails      | Aborts at step 1 with the API error           | Check `scripts/.env`; verify SA shared on Sheet                  |
-| `CLASH` in dry-run    | Aborts before commit; prints the conflicts    | Resolve in Sheet (see §2.3) and re-run                           |
+| `CLASH` in dry-run    | Aborts before commit; prints the conflicts    | In Sheet, change `approved` → `replace` (overwrite) or `rejected` (keep), then re-run |
 | Nothing to merge      | Exits cleanly (`nothing new to merge`)        | Nothing                                                          |
 | Empty diff after sync | Skips the commit (no empty commits ever)      | Nothing                                                          |
 | Push rejected         | Commit succeeded locally; push errored        | `git pull --rebase && git push`                                  |
@@ -344,7 +356,7 @@ SKIP_PUSH=1 ./scripts/auto_sync.sh
 ### 3.1 Path B — `scripts/sync.py` (semi-manual)
 
 Zero-dependency Python 3 script. It reads a Google Sheet CSV export, picks
-only `status=approved` rows, routes them to the right `docs/downloads/<genre>-core-terms.csv`,
+only `status=approved` and `status=replace` rows, routes them to the right `docs/downloads/<genre>-core-terms.csv`,
 and **refuses to overwrite conflicts**.
 
 #### One-time
@@ -361,14 +373,15 @@ The script lives at `scripts/sync.py`. Nothing to install.
 
 # 2. Dry-run first to see the plan
 python3 scripts/sync.py
-#   - lists every approved row as ADD / DUP / CLASH
-#   - shows per-file additions
+#   - lists every approved/replace row as ADD / REPLACE / DUP / CLASH
+#   - shows per-file plan (+N new, ~M replaced)
 #   - exits without touching disk
 
 # 3. If the plan looks right, apply
 python3 scripts/sync.py --apply
 #   - backs up each modified CSV (docs/downloads/*.bak.<timestamp>)
 #   - appends approved rows in the canonical column order
+#   - in-place updates rows for which the reviewer set status=replace
 #   - prints next-step git commands
 
 # 4. Inspect, preview, commit
@@ -378,30 +391,35 @@ git add docs/downloads/*.csv
 git commit -m "glossary: add N terms from submissions"
 git push
 
-# 5. Back in the Google Sheet, mark the rows you just merged:
-#    status=merged for ADDs, status=dup for DUPs, status remains 'approved'
-#    (or move to 'pending') for CLASHes you still need to think about.
+# 5. Back in the Google Sheet, mark the rows you just pushed:
+#    flip status from approved/replace → merged so the next run skips them.
+#    For CLASHes you didn't resolve, leave them as-is or set to pending.
 ```
 
 #### What the script handles for you
 
-| Sheet row              | Outcome in CSV                                  |
-| ---------------------- | ----------------------------------------------- |
-| `status=approved`, fresh chinese | Appended to `<genre>-core-terms.csv`  |
-| `status=approved`, exact same chinese + same English  | Skipped (logged as DUP)        |
-| `status=approved`, same chinese but different English | **Refused** — listed as CLASH, you fix manually |
-| `status=approved`, missing chinese / English          | Skipped, logged as INVALID    |
-| `status=approved`, genre is not xianxia/wuxia/xiuxian | Skipped (warning)             |
-| `status=pending` / `rejected` / `merged` / blank      | Ignored                       |
+| Sheet row                                                       | Outcome in CSV                                              |
+| --------------------------------------------------------------- | ----------------------------------------------------------- |
+| `status=approved`, fresh chinese                                | Appended (`+ ADD`)                                          |
+| `status=approved`, exact same chinese + same English            | Skipped (`~ DUP`)                                           |
+| `status=approved`, same chinese but different English           | **Refused** (`! CLASH`) — change to `replace` or `rejected` |
+| `status=replace`, fresh chinese                                 | Appended (`+ ADD`)                                          |
+| `status=replace`, exact same chinese + same English             | Skipped (`~ DUP`)                                           |
+| `status=replace`, same chinese but different English            | **Overwrites** existing row (`↻ REPLACE`); old English archived in `notes` |
+| `status=approved`/`replace`, missing chinese / English          | Skipped, logged as INVALID                                  |
+| `status=approved`/`replace`, genre not in xianxia/wuxia/xiuxian | Skipped (warning)                                           |
+| any other status (rejected / dup / merged / pending / blank)    | Ignored                                                     |
 
 #### Conflicts (`CLASH`)
 
-The script never overwrites. If it reports a conflict, your options:
+The script never overwrites unless you explicitly say `replace`. If it
+reports a conflict, your options in the Sheet:
 
-1. Open the existing CSV row, decide whether to:
-   - **keep existing as preferred**, fold the user's reasoning into the existing `notes` cell, then in the sheet set `status=merged`;
-   - **promote new English to preferred**, edit `preferred_english` directly (mention the old form in `notes` if useful), then re-run `sync.py`;
-   - **reject the submission**, set `status=rejected` in the sheet.
+1. **Adopt the new English** → change that row's `status` from `approved`
+   to `replace`. Re-run. The old English will be auto-archived in `notes`
+   as `was: <old form>`.
+2. **Keep the existing English** → set `status=rejected`. Re-run.
+3. **Defer** → set `status=pending`. Re-run later when you've decided.
 
 #### Custom genres
 

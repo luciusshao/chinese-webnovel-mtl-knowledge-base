@@ -66,19 +66,21 @@ say "step 2/4 — sync.py dry-run"
 
 # Bail early if sync would yield CLASH
 if grep -qE '^\s*!? *CLASH' /tmp/glossary-sync-plan.txt; then
-  die "sync.py reported CLASH(es). Resolve in the Sheet (set status=rejected, or edit preferred_english in CSV manually), then re-run."
+  die "sync.py reported CLASH(es). To overwrite the existing English, change status from 'approved' to 'replace' in the Sheet. To keep the existing, set status=rejected. Then re-run."
 fi
 
-# Count ADDs to decide whether there is anything to commit at all
+# Count ADDs and REPLACEs to decide whether there is anything to commit at all
 add_count="$(grep -cE '^\s*\+? *ADD\b' /tmp/glossary-sync-plan.txt || true)"
-if [[ "$add_count" -eq 0 ]]; then
+replace_count="$(grep -cE '^\s*↻? *REPLACE\b' /tmp/glossary-sync-plan.txt || true)"
+total_changes=$((add_count + replace_count))
+if [[ "$total_changes" -eq 0 ]]; then
   ok "nothing new to merge. Exiting cleanly."
   rm -f /tmp/glossary-sync-plan.txt
   exit 0
 fi
 
 # --- 3. apply --------------------------------------------------------------
-say "step 3/4 — applying ($add_count new term(s))"
+say "step 3/4 — applying ($add_count new, $replace_count replaced)"
 "$PYTHON" scripts/sync.py --apply
 
 # --- 4. commit + push ------------------------------------------------------
@@ -94,7 +96,10 @@ if git diff --cached --quiet; then
 fi
 
 say "step 4/4 — committing"
-msg="glossary: add $add_count term(s) from submissions"
+parts=()
+[[ "$add_count" -gt 0 ]] && parts+=("add $add_count term(s)")
+[[ "$replace_count" -gt 0 ]] && parts+=("replace $replace_count term(s)")
+msg="glossary: $(IFS=', '; echo "${parts[*]}") from submissions"
 git commit -m "$msg" \
   -m "Auto-merged from Google Sheet submissions via scripts/auto_sync.sh." \
   -m "Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"

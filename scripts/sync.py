@@ -21,15 +21,21 @@ Inputs
 
 Behaviour
 ---------
-- Only rows whose `status` column equals "approved" are processed.
+- Only rows whose `status` column is `approved` or `replace` are processed.
+  Everything else (rejected / dup / merged / pending / blank) is ignored,
+  so the reviewer never has to manually de-duplicate against existing CSVs.
 - Rows are routed to the CSV that matches their `genre` column.
   Unknown genres are skipped with a warning.
 - Conflict handling:
-    * Same (genre, chinese) AND same preferred_english → silently skipped (dup).
-    * Same (genre, chinese) BUT different preferred_english → reported as a
-      CONFLICT and *not* written. You must resolve it manually in the Sheet
-      (e.g. by mentioning the rejected form in `notes`) and re-run.
-    * Otherwise → appended to the corresponding CSV.
+    * Same (genre, chinese) AND same preferred_english → silently skipped (DUP).
+    * Same (genre, chinese) BUT different preferred_english:
+        · status=approved → reported as CLASH and *not* written. The reviewer
+          should change status to `replace` (to overwrite) or `rejected`
+          (to keep the existing English) and re-run.
+        · status=replace  → the existing row's preferred_english is OVERWRITTEN
+          and the old value is archived into the notes column
+          (e.g. "was: cave residence; <reviewer notes>").
+    * Otherwise (fresh chinese) → appended to the corresponding CSV.
 - A `.bak` copy of every modified CSV is created in the same directory before
   writing, so accidental clobbers can be reverted.
 - The script never edits the inbox file or the Google Sheet itself.
@@ -77,6 +83,15 @@ SUBMISSION_FIELD_MAP = {
 VALID_GENRES = {"xianxia", "wuxia", "xiuxian"}
 # `other` and friends will be reported but not auto-written; reviewer should
 # pick a real genre or extend this list.
+
+# Sheet `status` values that the reviewer uses to gate a row through:
+#   approved — append a fresh term; refuse to overwrite anything (CLASH if
+#              same chinese is already in the CSV with a different English).
+#   replace  — like approved, but if the chinese already exists with a
+#              DIFFERENT preferred_english, OVERWRITE that row's English and
+#              archive the old value into the notes column.
+# Anything else (rejected / dup / merged / pending / blank) is ignored.
+ALLOWED_STATUSES = {"approved", "replace"}
 
 ANSI = {
     "g":  "\033[32m",
@@ -166,13 +181,19 @@ def backup(path: Path) -> Path:
 # --------------------------------------------------------------------------
 
 def to_public_row(submission: Dict[str, str]) -> Dict[str, str]:
-    """Convert a mapped submission into a row matching PUBLIC_HEADERS."""
+    """Convert a mapped submission into a row matching PUBLIC_HEADERS.
+
+    The leading-underscore field `_status` is carried through for the
+    dispatcher in main(); write_csv() ignores it (only PUBLIC_HEADERS are
+    written), so it never leaks to disk.
+    """
     notes = submission.get("_reviewer_notes") or submission.get("_reason") or ""
     return {
         "genre":             (submission.get("genre") or "").lower().strip(),
         "chinese":           (submission.get("chinese") or "").strip(),
         "preferred_english": (submission.get("preferred_english") or "").strip(),
         "notes":             notes,
+        "_status":           (submission.get("status") or "").lower().strip(),
     }
 
 
@@ -227,17 +248,20 @@ def main() -> int:
     print(color(f"🟢 mode:    {'APPLY (will write)' if args.apply else 'DRY-RUN (no writes)'}", "b"))
     print()
 
-    # Filter to status=approved
+    # Filter to rows the reviewer has gated through (approved / replace).
     approved = []
     skipped_status_count = defaultdict(int)
     for row in inbox_rows:
         status = (row.get("status") or "").strip().lower()
-        if status == "approved":
+        if status in ALLOWED_STATUSES:
             approved.append(row)
         else:
             skipped_status_count[status or "(empty)"] += 1
 
-    print(color(f"Filter status==approved: kept {len(approved)} of {len(inbox_rows)}", "d"))
+    print(color(
+        f"Filter status in {sorted(ALLOWED_STATUSES)}: kept {len(approved)} of {len(inbox_rows)}",
+        "d",
+    ))
     if skipped_status_count:
         for s, n in sorted(skipped_status_count.items()):
             print(color(f"  · skipped status={s!r}: {n}", "d"))
@@ -245,6 +269,9 @@ def main() -> int:
 
     # Group by genre, classify against existing CSV
     additions: Dict[str, List[Dict[str, str]]] = defaultdict(list)
+    # replacements carry references INTO existing_cache[genre], so mutating
+    # them is enough — they will be picked up at write time.
+    replacements: List[Tuple[Dict[str, str], Dict[str, str], Path]] = []
     conflicts: List[Tuple[Dict[str, str], Dict[str, str], Path]] = []
     duplicates: List[Tuple[Dict[str, str], Path]] = []
     bad_genre: List[Dict[str, str]] = []
@@ -267,14 +294,32 @@ def main() -> int:
         if genre not in existing_cache:
             existing_cache[genre] = load_csv(target)
 
-        decision, conflict_row = classify(new_row, existing_cache[genre] + additions[genre])
+        sub_status = new_row["_status"]
+        decision, existing = classify(new_row, existing_cache[genre] + additions[genre])
 
         if decision == "duplicate":
+            # Same chinese + same English already in CSV. Both `approved`
+            # and `replace` mean "no-op" here.
             duplicates.append((new_row, target))
             print(f"  {color('~', 'y')} DUP    {genre}/{new_row['chinese']} → {new_row['preferred_english']!r}  (already present)")
         elif decision == "conflict":
-            conflicts.append((new_row, conflict_row, target))
-            print(f"  {color('!', 'r')} CLASH  {genre}/{new_row['chinese']}  existing={conflict_row.get('preferred_english')!r}  submitted={new_row['preferred_english']!r}")
+            # Same chinese, different English.
+            if sub_status == "replace":
+                # Promote: overwrite the existing row's English and archive
+                # the old value into notes.
+                replacements.append((new_row, existing, target))
+                print(
+                    f"  {color('↻', 'b')} REPLACE {genre}/{new_row['chinese']}  "
+                    f"{existing.get('preferred_english')!r} → {new_row['preferred_english']!r}"
+                )
+            else:
+                conflicts.append((new_row, existing, target))
+                print(
+                    f"  {color('!', 'r')} CLASH  {genre}/{new_row['chinese']}  "
+                    f"existing={existing.get('preferred_english')!r}  "
+                    f"submitted={new_row['preferred_english']!r}  "
+                    f"{color('(set status=replace to override)', 'd')}"
+                )
         else:  # add
             additions[genre].append(new_row)
             print(f"  {color('+', 'g')} ADD    {genre}/{new_row['chinese']} → {new_row['preferred_english']!r}")
@@ -286,41 +331,76 @@ def main() -> int:
             print(f"   genre={r['genre']!r}  chinese={r['chinese']!r}")
         print(color("   (use --include-genre <name> if you want to allow it)", "d"))
 
-    # Apply
+    # ---------- plan summary ----------
     print()
-    if not additions:
-        print(color("Nothing to add.", "d"))
+    if not additions and not replacements:
+        print(color("Nothing to add or replace.", "d"))
     else:
         print(color("Plan per-file:", "b"))
-        for genre, rows in sorted(additions.items()):
+        per_file: Dict[str, Dict[str, int]] = defaultdict(lambda: {"add": 0, "replace": 0})
+        for genre, rows in additions.items():
+            per_file[genre]["add"] += len(rows)
+        for new_row, _existing, _target in replacements:
+            per_file[new_row["genre"]]["replace"] += 1
+        for genre, counts in sorted(per_file.items()):
+            if not counts["add"] and not counts["replace"]:
+                continue
             target = DOWNLOADS_DIR / f"{genre}-core-terms.csv"
-            print(f"  {show(target)}: +{len(rows)} row(s)")
+            bits = []
+            if counts["add"]:
+                bits.append(f"+{counts['add']} new")
+            if counts["replace"]:
+                bits.append(f"~{counts['replace']} replaced")
+            print(f"  {show(target)}: {' / '.join(bits)}")
 
     if conflicts:
         print()
-        print(color(f"⛔ {len(conflicts)} conflict(s) NOT written. Resolve in Google Sheet:", "r"))
-        print(color("   - either set status=rejected if existing form is better,", "d"))
-        print(color("   - or fold the user's reasoning into the existing 'notes' manually then set status=merged.", "d"))
+        print(color(f"⛔ {len(conflicts)} conflict(s) NOT written. To resolve, in the Google Sheet:", "r"))
+        print(color("   · keep the existing English   → set status=rejected", "d"))
+        print(color("   · adopt the submitted English → change status from approved to replace", "d"))
+        print(color("   then re-run sync.py.", "d"))
 
     if not args.apply:
         print()
         print(color("Dry-run finished. Re-run with --apply to write the changes.", "y"))
         return 0
 
-    if not additions:
+    if not additions and not replacements:
         return 0
 
-    # Real write — back up first
+    # ---------- apply: replacements first (mutate cache), then write ----------
+
+    # Replacements mutate rows that live inside existing_cache[genre], so the
+    # final write will see the new values automatically.
+    for new_row, existing, _target in replacements:
+        old_english = (existing.get("preferred_english") or "").strip()
+        existing["preferred_english"] = new_row["preferred_english"]
+        notes_parts: List[str] = []
+        if new_row.get("notes", "").strip():
+            notes_parts.append(new_row["notes"].strip())
+        if old_english and old_english.lower() != new_row["preferred_english"].lower():
+            notes_parts.append(f"was: {old_english}")
+        prior = (existing.get("notes") or "").strip()
+        if prior:
+            notes_parts.append(f"(prev: {prior})")
+        existing["notes"] = "; ".join(notes_parts)
+
     print()
     print(color("Writing…", "b"))
-    for genre, rows in additions.items():
+    modified_genres = set(additions.keys()) | {row["genre"] for row, _, _ in replacements}
+    for genre in sorted(modified_genres):
         target = DOWNLOADS_DIR / f"{genre}-core-terms.csv"
         if target.exists():
             bak = backup(target)
             print(color(f"  💾 backup: {show(bak)}", "d"))
-        merged = existing_cache[genre] + rows
+        merged = existing_cache[genre] + additions.get(genre, [])
         write_csv(target, merged)
-        print(color(f"  ✓ wrote {show(target)}  (+{len(rows)} row(s), total {len(merged)})", "g"))
+        add_n = len(additions.get(genre, []))
+        repl_n = sum(1 for r, _, _ in replacements if r["genre"] == genre)
+        print(color(
+            f"  ✓ wrote {show(target)}  (+{add_n} new, ~{repl_n} replaced, total {len(merged)})",
+            "g",
+        ))
 
     print()
     print(color("Done. Recommended next steps:", "b"))
@@ -329,7 +409,7 @@ def main() -> int:
     print("  3. git add docs/downloads/*.csv && git commit -m 'glossary: add N terms from submissions'")
     print("  4. git push")
     print()
-    print(color("Then in Google Sheet, mark the just-merged rows as status=merged, and resolve any conflicts.", "d"))
+    print(color("Then in Google Sheet, flip the just-pushed rows to status=merged so the next run skips them.", "d"))
 
     return 0
 
