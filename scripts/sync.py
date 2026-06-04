@@ -403,21 +403,31 @@ def main() -> int:
         existing["notes"] = "; ".join(notes_parts)
 
     print()
-    print(color("Writing…", "b"))
-    modified_genres = set(additions.keys()) | {row["genre"] for row, _, _ in replacements}
-    for genre in sorted(modified_genres):
-        target = DOWNLOADS_DIR / f"{genre}-core-terms.csv"
-        if target.exists():
-            bak = backup(target)
-            print(color(f"  💾 backup: {show(bak)}", "d"))
-        merged = existing_cache[genre] + additions.get(genre, [])
-        write_csv(target, merged)
-        add_n = len(additions.get(genre, []))
-        repl_n = sum(1 for r, _, _ in replacements if r["genre"] == genre)
-        print(color(
-            f"  ✓ wrote {show(target)}  (+{add_n} new, ~{repl_n} replaced, total {len(merged)})",
-            "g",
-        ))
+    # Note: additions is a defaultdict, so any genre touched during dispatch
+    # has a key (possibly with an empty list) — filter those out.
+    modified_genres = (
+        {g for g, rows in additions.items() if rows}
+        | {row["genre"] for row, _, _ in replacements}
+    )
+    if modified_genres:
+        print(color("Writing…", "b"))
+        for genre in sorted(modified_genres):
+            target = DOWNLOADS_DIR / f"{genre}-core-terms.csv"
+            if target.exists():
+                bak = backup(target)
+                print(color(f"  💾 backup: {show(bak)}", "d"))
+            merged = existing_cache[genre] + additions.get(genre, [])
+            write_csv(target, merged)
+            add_n = len(additions.get(genre, []))
+            repl_n = sum(1 for r, _, _ in replacements if r["genre"] == genre)
+            print(color(
+                f"  ✓ wrote {show(target)}  (+{add_n} new, ~{repl_n} replaced, total {len(merged)})",
+                "g",
+            ))
+    else:
+        # DUP-only run — no CSV mutation needed, but we still recorded the
+        # row numbers below so mark_merged.py can clean up the Sheet.
+        print(color("No CSV changes (DUP-only run).", "d"))
 
     print()
     print(color("Done. Recommended next steps:", "b"))
