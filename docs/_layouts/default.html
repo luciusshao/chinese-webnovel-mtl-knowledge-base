@@ -4,29 +4,46 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
-    <meta name="description" content="{{ site.description }}" />
+    <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}" />
+
+    <meta name="theme-color" content="#f4ede0" />
+    <meta property="og:title" content="{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}" />
+    <meta property="og:description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}" />
+    <meta property="og:type" content="website" />
   </head>
   <body>
     <header class="site-header">
       <div class="shell site-header__inner">
-        <a class="brand" href="{{ '/' | relative_url }}">
-          <span class="brand__eyebrow">Public Knowledge Base</span>
-          <span class="brand__title">{{ site.title }}</span>
+        <a class="brand" href="{{ '/' | relative_url }}" aria-label="{{ site.title }} home">
+          <span class="brand__seal" aria-hidden="true">译</span>
+          <span class="brand__text">
+            <span class="brand__eyebrow">Public Knowledge Base</span>
+            <span class="brand__title">{{ site.title }}</span>
+          </span>
         </a>
-        <nav class="top-nav" aria-label="Primary">
+
+        <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false">
+          Menu
+        </button>
+
+        <nav class="top-nav" id="primary-nav" aria-label="Primary">
           <a href="{{ '/' | relative_url }}">Home</a>
-          <a class="top-nav__cta" href="https://www.xiandaos.com/demo">Demo Translation</a>
-          <a href="{{ '/navigation.html' | relative_url }}">Docs</a>
-          <a href="{{ '/getting-started.html' | relative_url }}">Start</a>
-          <a href="{{ '/glossary/glossary-principles.html' | relative_url }}">Glossary</a>
+          <a href="{{ '/glossary-browser.html' | relative_url }}">Browse</a>
           <a href="{{ '/glossary-library.html' | relative_url }}">Downloads</a>
-          <a href="{{ '/contribute-without-github.html' | relative_url }}">Contribute</a>
+          <a href="{{ '/contribute.html' | relative_url }}">Contribute</a>
+          <a href="{{ '/getting-started.html' | relative_url }}">Start</a>
+          <a href="{{ '/navigation.html' | relative_url }}">Docs</a>
+          <a class="top-nav__cta" href="https://www.xiandaos.com/demo">Demo →</a>
         </nav>
       </div>
     </header>
 
-    <main class="shell page-shell">
+    <main class="shell page-shell {% if page.bare %}page-shell--bare{% endif %}">
       {{ content }}
     </main>
 
@@ -38,12 +55,32 @@
         </div>
         <div class="footer-links">
           <a href="https://www.xiandaos.com/demo">Demo Translation</a>
-          <a href="{{ '/navigation.html' | relative_url }}">Browse Docs</a>
-          <a href="{{ '/glossary-library.html' | relative_url }}">Download Glossaries</a>
-          <a href="{{ '/forms/glossary-submission-template.html' | relative_url }}">Submit Glossary</a>
+          <a href="{{ '/glossary-browser.html' | relative_url }}">Browse Glossary</a>
+          <a href="{{ '/glossary-library.html' | relative_url }}">Download CSV</a>
+          <a href="{{ '/contribute.html' | relative_url }}">Submit Term</a>
+          <a href="{{ '/navigation.html' | relative_url }}">Docs</a>
           <a href="https://github.com/luciusshao/chinese-webnovel-mtl-knowledge-base">GitHub</a>
         </div>
       </div>
     </footer>
+
+    <script>
+      (function () {
+        var btn = document.querySelector('.nav-toggle');
+        var nav = document.getElementById('primary-nav');
+        if (!btn || !nav) return;
+        btn.addEventListener('click', function () {
+          var open = nav.classList.toggle('is-open');
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        // Close menu when clicking a link
+        nav.addEventListener('click', function (e) {
+          if (e.target.tagName === 'A' && nav.classList.contains('is-open')) {
+            nav.classList.remove('is-open');
+            btn.setAttribute('aria-expanded', 'false');
+          }
+        });
+      })();
+    </script>
   </body>
 </html>

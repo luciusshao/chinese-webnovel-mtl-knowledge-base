@@ -1,0 +1,399 @@
+---
+layout: default
+title: Contribute
+description: Submit Chinese-English glossary terms in seconds. No GitHub, no signup, no email.
+---
+
+<section>
+  <h1>Contribute glossary terms</h1>
+  <p>
+    Add one row per term. You can add as many rows as you like.
+    When you're done, click <strong>Submit all</strong>. Each row is reviewed before publishing.
+  </p>
+</section>
+
+<section>
+  <div class="section-head">
+    <h2>Your draft</h2>
+    <span class="section-head__hint" id="cf-count">0 rows</span>
+  </div>
+
+  <div class="cf-table-wrap">
+    <table class="cf-table" aria-describedby="cf-count">
+      <thead>
+        <tr>
+          <th style="width: 110px;">Genre</th>
+          <th style="width: 22%;">Chinese term</th>
+          <th style="width: 28%;">Preferred English</th>
+          <th>Reason <span class="text-muted" style="font-weight: 400;">(optional)</span></th>
+          <th style="width: 44px;" aria-label="Remove"></th>
+        </tr>
+      </thead>
+      <tbody id="cf-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="cf-actions">
+    <button type="button" class="btn btn--ghost btn--sm" id="cf-add">+ Add row</button>
+    <span class="cf-spacer"></span>
+    <span class="qf-toast" id="cf-toast"></span>
+    <button type="button" class="btn btn--primary" id="cf-submit">Submit all →</button>
+  </div>
+
+  <p class="text-muted cf-hint">
+    Tips: keep entries short, focus on terms that repeat across novels, one term per row.
+    Please do not submit copyrighted chapter content — terminology only.
+  </p>
+</section>
+
+<section>
+  <h2>What happens next</h2>
+  <ol style="font-family: var(--font-sans); font-size: 15px;">
+    <li>Each row goes to a private review queue.</li>
+    <li>The maintainer reviews entries — usually within a few days.</li>
+    <li>Approved terms are merged into the public glossary CSV files.</li>
+    <li>If a term you submit already exists, the maintainer either folds your reason into the existing entry or skips it.</li>
+    <li>Spam, copyrighted content, or off-topic submissions are dropped silently.</li>
+  </ol>
+  <p>
+    Want to see what's already collected before contributing?
+    Use the <a href="{{ '/glossary-browser.html' | relative_url }}">glossary browser</a>
+    or grab the <a href="{{ '/glossary-library.html' | relative_url }}">CSV files</a>.
+  </p>
+</section>
+
+<style>
+  .cf-table-wrap {
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    overflow: hidden;
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+    margin-top: 12px;
+  }
+  .cf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    margin: 0;
+    background: transparent;
+    border-radius: 0;
+  }
+  .cf-table th, .cf-table td {
+    padding: 0;
+    border-bottom: 1px solid var(--line-soft);
+    text-align: left;
+    vertical-align: middle;
+  }
+  .cf-table thead th {
+    padding: 10px 12px;
+    background: rgba(214, 132, 61, 0.10);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .cf-table tbody tr:last-child td { border-bottom: 0; }
+  .cf-table tbody tr:hover { background: rgba(214, 132, 61, 0.04); }
+  .cf-input,
+  .cf-select {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font: inherit;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    padding: 12px 12px;
+    color: var(--ink);
+    box-shadow: inset 0 0 0 0 transparent;
+    transition: background 0.12s, box-shadow 0.12s;
+  }
+  .cf-input:focus,
+  .cf-select:focus {
+    background: #fffaf0;
+    box-shadow: inset 0 0 0 2px rgba(142, 43, 20, 0.35);
+    border-radius: 4px;
+  }
+  .cf-input::placeholder { color: var(--muted-2); }
+  .cf-cn { font-family: var(--font-cjk); font-size: 16px; color: var(--accent-ink); }
+  .cf-rm {
+    width: 28px;
+    height: 28px;
+    border: 0;
+    background: transparent;
+    color: var(--muted-2);
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 6px;
+    line-height: 1;
+    margin: 0 6px;
+  }
+  .cf-rm:hover { background: rgba(142, 43, 20, 0.10); color: var(--accent); }
+  .cf-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .cf-spacer { flex: 1; }
+  .cf-hint {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    margin-top: 14px;
+  }
+  .cf-empty {
+    padding: 28px;
+    text-align: center;
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-size: 14px;
+  }
+  .cf-row--invalid { background: rgba(142, 43, 20, 0.06); }
+  @media (max-width: 760px) {
+    .cf-input, .cf-select { padding: 10px 10px; font-size: 14px; }
+    .cf-table thead { display: none; }
+    .cf-table, .cf-table tbody, .cf-table tr, .cf-table td { display: block; width: 100%; }
+    .cf-table tr {
+      padding: 10px 6px;
+      border-bottom: 1px solid var(--line-soft);
+      position: relative;
+    }
+    .cf-table tr:last-child { border-bottom: 0; }
+    .cf-table td { padding: 0; border: 0; }
+    .cf-table td::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+      padding: 6px 12px 0;
+    }
+    .cf-rm { position: absolute; top: 6px; right: 4px; }
+  }
+</style>
+
+<script>
+(function () {
+  // ====== config (from _config.yml) ======
+  var CONFIG = {
+    formAction:       {{ site.google_form_action_url    | default: ''    | jsonify }},
+    entryGenre:       {{ site.entry_genre              | default: ''    | jsonify }},
+    entryChinese:     {{ site.entry_chinese            | default: ''    | jsonify }},
+    entryEnglish:     {{ site.entry_preferred_english  | default: ''    | jsonify }},
+    entryReason:      {{ site.entry_reason             | default: ''    | jsonify }},
+    contactEmail:     {{ site.contact_email            | default: 'shaoyaoru@gmail.com' | jsonify }}
+  };
+  var FORM_READY = !!(CONFIG.formAction && CONFIG.entryGenre && CONFIG.entryChinese && CONFIG.entryEnglish);
+
+  // ====== state ======
+  var rows = []; // each: { id, genre, chinese, preferred_english, reason }
+  var nextId = 1;
+
+  // ====== elements ======
+  var $tbody  = document.getElementById('cf-tbody');
+  var $count  = document.getElementById('cf-count');
+  var $toast  = document.getElementById('cf-toast');
+  var $submit = document.getElementById('cf-submit');
+
+  // ====== helpers ======
+  function escapeHTML(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function showToast(msg, kind) {
+    if (!$toast) return;
+    $toast.textContent = msg || '';
+    $toast.style.color = kind === 'error' ? 'var(--accent)' :
+                         kind === 'ok' ? 'var(--jade)' : 'var(--muted)';
+    $toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () { $toast.classList.remove('show'); }, 2200);
+  }
+  function uid() { return 'r' + (nextId++); }
+
+  function emptyRow() {
+    return { id: uid(), genre: 'xianxia', chinese: '', preferred_english: '', reason: '' };
+  }
+
+  // ====== render ======
+  function render() {
+    if (!rows.length) {
+      $tbody.innerHTML = '<tr><td colspan="5" class="cf-empty">No rows yet. Click <strong>+ Add row</strong> to begin.</td></tr>';
+    } else {
+      $tbody.innerHTML = rows.map(function (r) {
+        return '' +
+          '<tr data-id="' + r.id + '">' +
+            '<td data-label="Genre">' +
+              '<select class="cf-select" data-field="genre" aria-label="Genre">' +
+                ['xianxia','wuxia','xiuxian','other'].map(function (g) {
+                  return '<option value="' + g + '"' + (r.genre === g ? ' selected' : '') + '>' + g + '</option>';
+                }).join('') +
+              '</select>' +
+            '</td>' +
+            '<td data-label="Chinese term">' +
+              '<input class="cf-input cf-cn" data-field="chinese" type="text" value="' + escapeHTML(r.chinese) + '" placeholder="天劫" aria-label="Chinese term"/>' +
+            '</td>' +
+            '<td data-label="Preferred English">' +
+              '<input class="cf-input" data-field="preferred_english" type="text" value="' + escapeHTML(r.preferred_english) + '" placeholder="heavenly tribulation" aria-label="Preferred English"/>' +
+            '</td>' +
+            '<td data-label="Reason (optional)">' +
+              '<input class="cf-input" data-field="reason" type="text" value="' + escapeHTML(r.reason) + '" placeholder="why this English is clearer or more standard" aria-label="Reason"/>' +
+            '</td>' +
+            '<td>' +
+              '<button class="cf-rm" type="button" aria-label="Remove row" data-rm="' + r.id + '">×</button>' +
+            '</td>' +
+          '</tr>';
+      }).join('');
+    }
+    $count.textContent = rows.length + (rows.length === 1 ? ' row' : ' rows');
+    $submit.disabled = rows.length === 0;
+    $submit.style.opacity = rows.length === 0 ? 0.5 : 1;
+  }
+
+  // ====== events ======
+  document.getElementById('cf-add').addEventListener('click', function () {
+    rows.push(emptyRow());
+    render();
+    // focus the new chinese input
+    var inputs = $tbody.querySelectorAll('input[data-field="chinese"]');
+    var last = inputs[inputs.length - 1];
+    if (last) last.focus();
+  });
+
+  $tbody.addEventListener('input', function (e) {
+    var tr = e.target.closest('tr');
+    var id = tr && tr.dataset.id;
+    var field = e.target.dataset && e.target.dataset.field;
+    if (!id || !field) return;
+    var r = rows.find(function (x) { return x.id === id; });
+    if (r) r[field] = e.target.value;
+  });
+
+  $tbody.addEventListener('change', function (e) {
+    var tr = e.target.closest('tr');
+    var id = tr && tr.dataset.id;
+    var field = e.target.dataset && e.target.dataset.field;
+    if (!id || field !== 'genre') return;
+    var r = rows.find(function (x) { return x.id === id; });
+    if (r) r.genre = e.target.value;
+  });
+
+  $tbody.addEventListener('click', function (e) {
+    var rm = e.target.getAttribute && e.target.getAttribute('data-rm');
+    if (!rm) return;
+    rows = rows.filter(function (x) { return x.id !== rm; });
+    render();
+  });
+
+  // ====== submit ======
+  function validate() {
+    var bad = [];
+    rows.forEach(function (r) {
+      var ok = (r.chinese || '').trim() && (r.preferred_english || '').trim();
+      if (!ok) bad.push(r.id);
+    });
+    // visual cue
+    Array.prototype.forEach.call($tbody.querySelectorAll('tr'), function (tr) {
+      tr.classList.toggle('cf-row--invalid', bad.indexOf(tr.dataset.id) !== -1);
+    });
+    return bad;
+  }
+
+  function postOne(r) {
+    // Build form-encoded body for Google Forms `formResponse` endpoint.
+    var body = new URLSearchParams();
+    body.set(CONFIG.entryGenre,   r.genre);
+    body.set(CONFIG.entryChinese, (r.chinese || '').trim());
+    body.set(CONFIG.entryEnglish, (r.preferred_english || '').trim());
+    if (CONFIG.entryReason && (r.reason || '').trim()) {
+      body.set(CONFIG.entryReason, (r.reason || '').trim());
+    }
+    // Google Forms responds with an opaque cross-origin response; `no-cors` lets us
+    // fire-and-forget without CORS errors. The data still reaches Google's backend.
+    return fetch(CONFIG.formAction, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    });
+  }
+
+  function fallbackCopyAndEmail() {
+    // Pretty-print rows so the user can paste / email them manually.
+    var lines = ['Genre,Chinese,Preferred English,Reason'];
+    rows.forEach(function (r) {
+      var quote = function (s) {
+        s = String(s || '');
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      };
+      lines.push([quote(r.genre), quote(r.chinese), quote(r.preferred_english), quote(r.reason)].join(','));
+    });
+    var text = lines.join('\n');
+
+    var doMailto = function () {
+      var subject = encodeURIComponent('[Glossary submission] ' + rows.length + ' term' + (rows.length === 1 ? '' : 's'));
+      var body = encodeURIComponent(
+        'Hello,\n\nI would like to contribute the following glossary entries:\n\n' +
+        text +
+        '\n\n— Sent from the Chinese Webnovel MTL Knowledge Base.\n'
+      );
+      window.location.href = 'mailto:' + CONFIG.contactEmail + '?subject=' + subject + '&body=' + body;
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        showToast('Submission backend not configured — copied to clipboard, opening email.', 'ok');
+        setTimeout(doMailto, 600);
+      }, doMailto);
+    } else {
+      doMailto();
+    }
+  }
+
+  $submit.addEventListener('click', function () {
+    if (!rows.length) return;
+    var bad = validate();
+    if (bad.length) {
+      showToast('Fill Chinese term + Preferred English in highlighted rows.', 'error');
+      return;
+    }
+
+    if (!FORM_READY) {
+      fallbackCopyAndEmail();
+      return;
+    }
+
+    $submit.disabled = true;
+    $submit.textContent = 'Submitting…';
+
+    Promise.all(rows.map(postOne))
+      .then(function () {
+        showToast('Submitted ' + rows.length + ' term' + (rows.length === 1 ? '' : 's') + '. Thank you!', 'ok');
+        rows = [];
+        render();
+      })
+      .catch(function () {
+        // With mode: no-cors, fetch only rejects on network failure. We treat that as a real failure.
+        showToast('Network error — please try again, or copy-and-email as a fallback.', 'error');
+      })
+      .finally(function () {
+        $submit.disabled = rows.length === 0;
+        $submit.textContent = 'Submit all →';
+      });
+  });
+
+  // bootstrap with one empty row
+  rows.push(emptyRow());
+  render();
+
+  if (!FORM_READY) {
+    showToast('Form backend not configured yet — Submit will fall back to email.', 'error');
+  }
+})();
+</script>

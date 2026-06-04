@@ -1,0 +1,303 @@
+---
+layout: default
+title: Browse Glossary
+description: Search, filter, and export Chinese-English glossary terms for xianxia, wuxia, and xiuxian web novels.
+---
+
+<section>
+  <h1>Browse the glossary</h1>
+  <p>
+    Search Chinese or English, filter by genre, tick the rows you care about, and export
+    your selection as CSV or Markdown. Everything happens in your browser — nothing is uploaded.
+  </p>
+
+  <div class="gb">
+    <div class="gb-toolbar">
+      <label class="gb-search" aria-label="Search terms">
+        <span class="gb-search__icon" aria-hidden="true">⌕</span>
+        <input id="gb-search" type="search" placeholder="Search Chinese, English, notes…" autocomplete="off" />
+      </label>
+      <div class="gb-filters" role="group" aria-label="Filter by genre">
+        <button class="gb-filter" data-genre="all"     aria-pressed="true">All</button>
+        <button class="gb-filter" data-genre="xianxia" aria-pressed="false">Xianxia</button>
+        <button class="gb-filter" data-genre="wuxia"   aria-pressed="false">Wuxia</button>
+        <button class="gb-filter" data-genre="xiuxian" aria-pressed="false">Xiuxian</button>
+      </div>
+      <div class="gb-actions">
+        <button class="btn btn--ghost btn--sm" id="gb-select-all" type="button">Select all</button>
+        <button class="btn btn--ghost btn--sm" id="gb-clear" type="button">Clear</button>
+      </div>
+    </div>
+
+    <div class="flex-row" style="justify-content: space-between;">
+      <div class="gb-stats" id="gb-stats">Loading…</div>
+      <div class="gb-actions">
+        <button class="btn btn--primary btn--sm" id="gb-export-csv" type="button">⤓ Export selected as CSV</button>
+        <button class="btn btn--ink btn--sm"    id="gb-export-md"  type="button">⤓ Export as Markdown</button>
+      </div>
+    </div>
+
+    <div class="gb-table-wrap">
+      <table class="gb-table" aria-describedby="gb-stats">
+        <thead>
+          <tr>
+            <th style="width: 36px;">
+              <input type="checkbox" id="gb-toggle" class="gb-checkbox" aria-label="Toggle all visible rows" />
+            </th>
+            <th style="width: 90px;">Genre</th>
+            <th style="width: 18%;">Chinese</th>
+            <th>Preferred English</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="gb-tbody">
+          <tr><td colspan="5" class="gb-empty">Loading glossary data…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-muted" style="font-family: var(--font-sans); font-size: 13px;">
+      Tip: Selections survive search and filter changes. Export only takes the rows you have ticked.
+      Want a clean ready-made CSV instead? See the <a href="{{ '/glossary-library.html' | relative_url }}">Glossary Library</a>.
+    </p>
+  </div>
+</section>
+
+<script>
+(function () {
+  // --- config ---
+  var SOURCES = [
+    { url: '{{ "/downloads/xianxia-core-terms.csv" | relative_url }}', genre: 'xianxia' },
+    { url: '{{ "/downloads/wuxia-core-terms.csv"   | relative_url }}', genre: 'wuxia'   },
+    { url: '{{ "/downloads/xiuxian-core-terms.csv" | relative_url }}', genre: 'xiuxian' }
+  ];
+  var GENRE_COLOR = {
+    xianxia: { bg: 'rgba(142, 43, 20, 0.10)',  fg: '#8e2b14' },
+    wuxia:   { bg: 'rgba(79, 111, 94, 0.14)',  fg: '#3f5b4d' },
+    xiuxian: { bg: 'rgba(185, 136, 47, 0.18)', fg: '#7c5b1e' },
+    other:   { bg: 'rgba(28, 22, 18, 0.08)',   fg: '#1c1612' }
+  };
+
+  // --- state ---
+  var rows = [];          // [{genre, chinese, preferred_english, notes, _key}]
+  var selected = new Set();
+  var activeGenre = 'all';
+  var query = '';
+
+  // --- elements ---
+  var $tbody  = document.getElementById('gb-tbody');
+  var $stats  = document.getElementById('gb-stats');
+  var $search = document.getElementById('gb-search');
+  var $toggle = document.getElementById('gb-toggle');
+
+  // --- helpers ---
+  function parseCSV(text) {
+    // RFC-ish CSV parser supporting quoted fields with commas and escaped quotes.
+    var out = [];
+    var i = 0, field = '', row = [], inQuotes = false;
+    while (i < text.length) {
+      var ch = text[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
+        }
+        field += ch; i++; continue;
+      }
+      if (ch === '"') { inQuotes = true; i++; continue; }
+      if (ch === ',') { row.push(field); field = ''; i++; continue; }
+      if (ch === '\r') { i++; continue; }
+      if (ch === '\n') { row.push(field); out.push(row); row = []; field = ''; i++; continue; }
+      field += ch; i++;
+    }
+    if (field !== '' || row.length) { row.push(field); out.push(row); }
+    return out;
+  }
+
+  function csvToObjects(text, defaultGenre) {
+    var grid = parseCSV(text).filter(function (r) { return r.some(function (c) { return c.trim() !== ''; }); });
+    if (!grid.length) return [];
+    var headers = grid[0].map(function (h) { return h.trim().toLowerCase(); });
+    return grid.slice(1).map(function (r) {
+      var obj = {};
+      headers.forEach(function (h, idx) { obj[h] = (r[idx] || '').trim(); });
+      if (!obj.genre) obj.genre = defaultGenre;
+      return obj;
+    });
+  }
+
+  function escapeHTML(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function csvEscape(v) {
+    var s = String(v == null ? '' : v);
+    if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function rowKey(r) {
+    return r.genre + '' + r.chinese + '' + r.preferred_english;
+  }
+
+  function passes(r) {
+    if (activeGenre !== 'all' && r.genre !== activeGenre) return false;
+    if (!query) return true;
+    var q = query.toLowerCase();
+    return ['chinese', 'preferred_english', 'notes', 'genre']
+      .some(function (k) { return (r[k] || '').toLowerCase().indexOf(q) > -1; });
+  }
+
+  function render() {
+    var visible = rows.filter(passes);
+    if (!visible.length) {
+      $tbody.innerHTML = '<tr><td colspan="5" class="gb-empty">No matching terms. Try a different keyword or filter.</td></tr>';
+    } else {
+      $tbody.innerHTML = visible.map(function (r) {
+        var color = GENRE_COLOR[r.genre] || GENRE_COLOR.other;
+        var checked = selected.has(r._key) ? 'checked' : '';
+        return '' +
+          '<tr data-key="' + escapeHTML(r._key) + '">' +
+            '<td><input type="checkbox" class="gb-checkbox gb-row" ' + checked + ' aria-label="Select row"/></td>' +
+            '<td><span class="gb-genre" style="background:' + color.bg + ';color:' + color.fg + '">' + escapeHTML(r.genre) + '</span></td>' +
+            '<td class="gb-cn">' + escapeHTML(r.chinese) + '</td>' +
+            '<td class="gb-en">' + escapeHTML(r.preferred_english) + '</td>' +
+            '<td class="gb-alt">' + escapeHTML(r.notes) + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+    $stats.innerHTML = '<strong>' + visible.length + '</strong> shown · <strong>' + selected.size + '</strong> selected · ' + rows.length + ' total';
+    syncToggleState(visible);
+  }
+
+  function syncToggleState(visible) {
+    if (!visible || !visible.length) {
+      $toggle.checked = false;
+      $toggle.indeterminate = false;
+      return;
+    }
+    var n = visible.filter(function (r) { return selected.has(r._key); }).length;
+    $toggle.checked = n === visible.length;
+    $toggle.indeterminate = n > 0 && n < visible.length;
+  }
+
+  function selectedRows() {
+    return rows.filter(function (r) { return selected.has(r._key); });
+  }
+
+  function download(filename, content, mime) {
+    var blob = new Blob([content], { type: (mime || 'text/plain') + ';charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 0);
+  }
+
+  function exportCSV() {
+    var picked = selectedRows();
+    if (!picked.length) { alert('Tick at least one row to export.'); return; }
+    var headers = ['genre', 'chinese', 'preferred_english', 'notes'];
+    var lines = [headers.join(',')];
+    picked.forEach(function (r) {
+      lines.push(headers.map(function (h) { return csvEscape(r[h]); }).join(','));
+    });
+    var stamp = new Date().toISOString().slice(0, 10);
+    download('glossary-export-' + stamp + '.csv', lines.join('\n'), 'text/csv');
+  }
+
+  function exportMarkdown() {
+    var picked = selectedRows();
+    if (!picked.length) { alert('Tick at least one row to export.'); return; }
+    var lines = [];
+    lines.push('# My Glossary Export');
+    lines.push('');
+    lines.push('Generated from the Chinese Webnovel MTL Knowledge Base.');
+    lines.push('');
+    lines.push('| Genre | Chinese | Preferred English | Notes |');
+    lines.push('|-------|---------|-------------------|-------|');
+    picked.forEach(function (r) {
+      lines.push('| ' + [r.genre, r.chinese, r.preferred_english, r.notes]
+        .map(function (v) { return String(v || '').replace(/\|/g, '\\|').replace(/\n/g, ' '); })
+        .join(' | ') + ' |');
+    });
+    var stamp = new Date().toISOString().slice(0, 10);
+    download('glossary-export-' + stamp + '.md', lines.join('\n'), 'text/markdown');
+  }
+
+  // --- events ---
+  $search.addEventListener('input', function (e) { query = e.target.value.trim(); render(); });
+
+  document.querySelectorAll('.gb-filter').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      activeGenre = btn.dataset.genre;
+      document.querySelectorAll('.gb-filter').forEach(function (b) {
+        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+      });
+      render();
+    });
+  });
+
+  $tbody.addEventListener('change', function (e) {
+    if (!e.target.classList.contains('gb-row')) return;
+    var tr = e.target.closest('tr');
+    var key = tr && tr.dataset.key;
+    if (!key) return;
+    if (e.target.checked) selected.add(key); else selected.delete(key);
+    var visible = rows.filter(passes);
+    $stats.innerHTML = '<strong>' + visible.length + '</strong> shown · <strong>' + selected.size + '</strong> selected · ' + rows.length + ' total';
+    syncToggleState(visible);
+  });
+
+  $toggle.addEventListener('change', function () {
+    var visible = rows.filter(passes);
+    if ($toggle.checked) {
+      visible.forEach(function (r) { selected.add(r._key); });
+    } else {
+      visible.forEach(function (r) { selected.delete(r._key); });
+    }
+    render();
+  });
+
+  document.getElementById('gb-select-all').addEventListener('click', function () {
+    rows.filter(passes).forEach(function (r) { selected.add(r._key); });
+    render();
+  });
+  document.getElementById('gb-clear').addEventListener('click', function () {
+    selected.clear();
+    render();
+  });
+
+  document.getElementById('gb-export-csv').addEventListener('click', exportCSV);
+  document.getElementById('gb-export-md').addEventListener('click', exportMarkdown);
+
+  // --- bootstrap ---
+  Promise.all(SOURCES.map(function (s) {
+    return fetch(s.url).then(function (resp) {
+      if (!resp.ok) throw new Error('Failed to load ' + s.url);
+      return resp.text();
+    }).then(function (text) {
+      return csvToObjects(text, s.genre);
+    });
+  })).then(function (sets) {
+    var seen = {};
+    sets.forEach(function (set) {
+      set.forEach(function (r) {
+        var key = rowKey(r);
+        if (seen[key]) return;
+        seen[key] = true;
+        r._key = key;
+        rows.push(r);
+      });
+    });
+    render();
+  }).catch(function (err) {
+    console.error(err);
+    $tbody.innerHTML = '<tr><td colspan="5" class="gb-empty">Could not load glossary data. ' + escapeHTML(err.message) + '</td></tr>';
+  });
+})();
+</script>

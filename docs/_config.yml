@@ -5,8 +5,39 @@ markdown: kramdown
 header_pages:
   - navigation.md
   - getting-started.md
-  - contribute-without-github.md
+  - contribute.html
   - how-to-submit-to-maintainer.md
+
+# ----------------------------------------------------------------
+# Site contact
+# ----------------------------------------------------------------
+contact_email: shaoyaoru@gmail.com
+
+# ----------------------------------------------------------------
+# Submission backend (Google Forms — used invisibly, no iframe)
+# ----------------------------------------------------------------
+# How the contribute page submits:
+#   1. User fills the on-site multi-row table.
+#   2. JS POSTs each row to `google_form_action_url` with the four entry IDs below.
+#   3. Submissions appear in the response sheet bound to the form.
+#
+# To get these values:
+#   - Open the Google Form editor → ⋮ menu → "Get pre-filled link".
+#   - Fill each field with a recognisable placeholder (e.g. GENRE_X).
+#   - Click "Get link" → copy the URL it produces.
+#   - The URL contains  ?usp=pp_url&entry.NNNNNN=GENRE_X&entry.MMMMMM=CHINESE_X&...
+#     Each `entry.NNNNNN` is the numeric ID for the corresponding field.
+#   - Replace `viewform` in the action URL with `formResponse` (this is what JS POSTs to).
+#
+# Leave any value as an empty string ("") to disable the live backend; the
+# contribute page will fall back to "copy + open email" mode automatically.
+
+google_form_action_url:    "https://docs.google.com/forms/d/e/1FAIpQLSfaJ2oUq-l56wHwMibRO5j6AyrcFunoPWnFBEx8ZbC2RvcFaQ/formResponse"
+entry_genre:               "entry.1114355628"
+entry_chinese:             "entry.750687684"
+entry_preferred_english:   "entry.1781220749"
+entry_reason:              "entry.224936945"
+
 show_excerpts: false
 defaults:
   - scope:
@@ -16,24 +47,24 @@ defaults:
   - scope:
       path: "guides"
     values:
-      layout: page
+      layout: default
   - scope:
       path: "glossary"
     values:
-      layout: page
+      layout: default
   - scope:
       path: "reference"
     values:
-      layout: page
+      layout: default
   - scope:
       path: "prompts"
     values:
-      layout: page
+      layout: default
   - scope:
       path: "policies"
     values:
-      layout: page
+      layout: default
   - scope:
       path: "forms"
     values:
-      layout: page
+      layout: default

@@ -1,0 +1,127 @@
+---
+layout: default
+title: Glossary Library
+description: Download ready-made Chinese-English glossary CSV files for xianxia, wuxia, and xiuxian web novels.
+---
+
+<section>
+  <h1>Glossary library</h1>
+  <p>
+    Ready-to-use CSV files for ordinary readers. Open them in Excel or Numbers,
+    paste the rows into your AI translator, or feed them to your own glossary tool.
+    No GitHub account needed.
+  </p>
+
+  <div class="card-grid" id="lib-grid">
+    <!-- Cards rendered by JS so that term counts stay accurate. Static fallback below. -->
+  </div>
+
+  <noscript>
+    <ul>
+      <li><a href="{{ '/downloads/xianxia-core-terms.csv' | relative_url }}">Xianxia core terms (CSV)</a></li>
+      <li><a href="{{ '/downloads/wuxia-core-terms.csv'   | relative_url }}">Wuxia core terms (CSV)</a></li>
+      <li><a href="{{ '/downloads/xiuxian-core-terms.csv' | relative_url }}">Xiuxian core terms (CSV)</a></li>
+      <li><a href="{{ '/downloads/starter-combined-glossary.csv' | relative_url }}">Starter combined glossary (CSV)</a></li>
+    </ul>
+  </noscript>
+
+  <h2>Want to pick and choose?</h2>
+  <p>
+    The <a href="{{ '/glossary-browser.html' | relative_url }}">online glossary browser</a> lets you
+    search, filter by genre, and tick the rows you want — then export your selection as CSV
+    or Markdown. Useful when you only care about a specific novel or character.
+  </p>
+
+  <h2>Suggested columns</h2>
+  <p>The CSV files use the same four columns so non-technical users can edit them easily:</p>
+  <ul>
+    <li><code>genre</code> — xianxia, wuxia, xiuxian, or other</li>
+    <li><code>chinese</code> — the Chinese term as it appears in source novels</li>
+    <li><code>preferred_english</code> — the recommended English rendering</li>
+    <li><code>notes</code> — short reasoning, e.g. "transliteration reads better here"</li>
+  </ul>
+
+  <h2>How to contribute back</h2>
+  <p>
+    If you improve a glossary file: download the CSV, edit rows, and submit through the
+    <a href="{{ '/contribute.html' | relative_url }}">contribute page</a> — either via the
+    online form or by emailing the file to the maintainer. No GitHub required.
+  </p>
+</section>
+
+<script>
+(function () {
+  var FILES = [
+    {
+      file: 'xianxia-core-terms.csv',
+      title: 'Xianxia core terms',
+      icon: '仙',
+      desc: 'Cultivation, qi, dantian, tribulation, ascension — the high-fantasy backbone of immortal-cultivation novels.'
+    },
+    {
+      file: 'wuxia-core-terms.csv',
+      title: 'Wuxia core terms',
+      icon: '侠',
+      desc: 'Jianghu, sect leadership, internal force, sword arts — for grounded martial-world stories.'
+    },
+    {
+      file: 'xiuxian-core-terms.csv',
+      title: 'Xiuxian core terms',
+      icon: '修',
+      desc: 'Cultivation methods, realms, breakthroughs, life-bound treasures — cross-genre cultivation vocabulary.'
+    },
+    {
+      file: 'starter-combined-glossary.csv',
+      title: 'Starter combined glossary',
+      icon: '辞',
+      desc: 'Hand-picked highlights from all three genres. Best if you do not know which one to start with.',
+      feature: true
+    }
+  ];
+
+  var grid = document.getElementById('lib-grid');
+  if (!grid) return;
+
+  function escapeHTML(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function countLines(text) {
+    var n = 0, lines = text.split(/\r?\n/);
+    for (var i = 1; i < lines.length; i++) { // skip header
+      if (lines[i].trim() !== '') n++;
+    }
+    return n;
+  }
+
+  grid.innerHTML = FILES.map(function (f) {
+    var url = '{{ "/downloads/" | relative_url }}' + f.file;
+    return '' +
+      '<div class="card ' + (f.feature ? 'card--feature' : '') + '" data-file="' + escapeHTML(f.file) + '">' +
+        '<div class="card__icon" aria-hidden="true">' + escapeHTML(f.icon) + '</div>' +
+        '<h3 class="card__title">' + escapeHTML(f.title) + '</h3>' +
+        '<p class="card__desc">' + escapeHTML(f.desc) + '</p>' +
+        '<div class="card__meta">' +
+          '<span class="chip chip--ink" data-count>… terms</span>' +
+          '<span class="chip">CSV</span>' +
+        '</div>' +
+        '<div class="qf-actions" style="margin-top: 12px;">' +
+          '<a class="btn btn--primary btn--sm" href="' + url + '" download>⤓ Download</a>' +
+          '<a class="btn btn--ghost btn--sm" href="{{ "/glossary-browser.html" | relative_url }}">Open in browser →</a>' +
+        '</div>' +
+      '</div>';
+  }).join('');
+
+  FILES.forEach(function (f) {
+    var url = '{{ "/downloads/" | relative_url }}' + f.file;
+    fetch(url).then(function (r) { return r.ok ? r.text() : ''; }).then(function (text) {
+      if (!text) return;
+      var card  = grid.querySelector('[data-file="' + f.file + '"]');
+      var label = card && card.querySelector('[data-count]');
+      if (label) label.textContent = countLines(text) + ' terms';
+    }).catch(function () {});
+  });
+})();
+</script>
