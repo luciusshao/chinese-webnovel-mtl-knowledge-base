@@ -12,7 +12,10 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
   </p>
 </section>
 
-<section>
+<!-- ============================================================
+     COMPOSE MODE — the editable draft table
+     ============================================================ -->
+<section id="cf-compose">
   <div class="section-head">
     <h2>Your draft</h2>
     <span class="section-head__hint" id="cf-count">0 rows</span>
@@ -46,6 +49,34 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
   </p>
 </section>
 
+<!-- ============================================================
+     RECEIPT MODE — shown after a successful submission
+     ============================================================ -->
+<section id="cf-receipt" hidden aria-live="polite">
+  <div class="cf-receipt-banner">
+    <div class="cf-receipt-mark" aria-hidden="true">✓</div>
+    <h2 class="cf-receipt-title">
+      Submitted <span id="cf-receipt-count">0</span>
+      <span id="cf-receipt-noun">term</span> — thank you!
+    </h2>
+    <p class="cf-receipt-sub">
+      Your submissions are now in the maintainer's review queue.
+      Approved terms typically appear in the public glossary within
+      a few days to a week. You'll see them in the
+      <a href="{{ '/glossary-browser.html' | relative_url }}">glossary browser</a>
+      once they're merged.
+    </p>
+  </div>
+
+  <h3 class="cf-receipt-list-title">What you sent</h3>
+  <ul class="cf-receipt-list" id="cf-receipt-list"></ul>
+
+  <div class="cf-actions cf-actions--center">
+    <button type="button" class="btn btn--primary" id="cf-submit-more">+ Submit more terms</button>
+    <a class="btn btn--ghost btn--sm" href="{{ '/glossary-browser.html' | relative_url }}">Browse the glossary →</a>
+  </div>
+</section>
+
 <section>
   <h2>What happens next</h2>
   <ol style="font-family: var(--font-sans); font-size: 15px;">
@@ -63,6 +94,7 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
 </section>
 
 <style>
+  /* ---------- compose-mode table (unchanged) ---------- */
   .cf-table-wrap {
     border: 1px solid var(--line);
     border-radius: var(--r);
@@ -139,6 +171,7 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
     margin-top: 14px;
     flex-wrap: wrap;
   }
+  .cf-actions--center { justify-content: center; }
   .cf-spacer { flex: 1; }
   .cf-hint {
     font-family: var(--font-sans);
@@ -153,6 +186,107 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
     font-size: 14px;
   }
   .cf-row--invalid { background: rgba(142, 43, 20, 0.06); }
+
+  /* ---------- receipt mode ---------- */
+  .cf-receipt-banner {
+    background: linear-gradient(135deg, #f3fbf5 0%, #ecf6f0 100%);
+    border: 1px solid rgba(64, 132, 87, 0.25);
+    border-radius: var(--r-lg, 14px);
+    padding: 28px 24px 24px;
+    text-align: center;
+    margin-top: 12px;
+    box-shadow: var(--shadow-sm);
+  }
+  .cf-receipt-mark {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: #408457;
+    color: #fff;
+    font-size: 30px;
+    line-height: 56px;
+    font-weight: 700;
+    box-shadow: 0 6px 16px rgba(64, 132, 87, 0.30);
+  }
+  .cf-receipt-title {
+    margin: 4px 0 6px;
+    font-size: 22px;
+    color: var(--ink);
+  }
+  .cf-receipt-sub {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 6px auto 0;
+    max-width: 56ch;
+  }
+  .cf-receipt-list-title {
+    margin: 28px 0 10px;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-weight: 600;
+  }
+  .cf-receipt-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .cf-receipt-item {
+    display: grid;
+    grid-template-columns: 110px 1.1fr auto 1.4fr;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line-soft);
+    font-family: var(--font-sans);
+    font-size: 14px;
+  }
+  .cf-receipt-item:last-child { border-bottom: 0; }
+  .cf-receipt-genre {
+    display: inline-block;
+    padding: 2px 10px;
+    background: rgba(214, 132, 61, 0.18);
+    color: var(--accent-ink);
+    border-radius: 999px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    text-align: center;
+  }
+  .cf-receipt-cn {
+    font-family: var(--font-cjk);
+    font-size: 17px;
+    color: var(--accent-ink);
+  }
+  .cf-receipt-arrow {
+    color: var(--muted-2);
+    font-size: 14px;
+  }
+  .cf-receipt-en {
+    color: var(--ink);
+  }
+  .cf-receipt-reason {
+    grid-column: 2 / -1;
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+    line-height: 1.45;
+  }
+  .cf-receipt-reason::before { content: '“'; margin-right: 1px; }
+  .cf-receipt-reason::after  { content: '”'; margin-left: 1px; }
+
+  /* ---------- mobile ---------- */
   @media (max-width: 760px) {
     .cf-input, .cf-select { padding: 10px 10px; font-size: 14px; }
     .cf-table thead { display: none; }
@@ -174,6 +308,21 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
       padding: 6px 12px 0;
     }
     .cf-rm { position: absolute; top: 6px; right: 4px; }
+
+    .cf-receipt-item {
+      grid-template-columns: auto 1fr;
+      grid-template-areas:
+        "genre genre"
+        "cn    en"
+        "reason reason";
+      gap: 4px 10px;
+      padding: 14px 16px;
+    }
+    .cf-receipt-genre { grid-area: genre; justify-self: start; }
+    .cf-receipt-cn    { grid-area: cn; }
+    .cf-receipt-en    { grid-area: en; }
+    .cf-receipt-arrow { display: none; }
+    .cf-receipt-reason{ grid-area: reason; }
   }
 </style>
 
@@ -195,10 +344,16 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
   var nextId = 1;
 
   // ====== elements ======
-  var $tbody  = document.getElementById('cf-tbody');
-  var $count  = document.getElementById('cf-count');
-  var $toast  = document.getElementById('cf-toast');
-  var $submit = document.getElementById('cf-submit');
+  var $compose      = document.getElementById('cf-compose');
+  var $receipt      = document.getElementById('cf-receipt');
+  var $receiptList  = document.getElementById('cf-receipt-list');
+  var $receiptCount = document.getElementById('cf-receipt-count');
+  var $receiptNoun  = document.getElementById('cf-receipt-noun');
+  var $submitMore   = document.getElementById('cf-submit-more');
+  var $tbody        = document.getElementById('cf-tbody');
+  var $count        = document.getElementById('cf-count');
+  var $toast        = document.getElementById('cf-toast');
+  var $submit       = document.getElementById('cf-submit');
 
   // ====== helpers ======
   function escapeHTML(s) {
@@ -221,7 +376,7 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
     return { id: uid(), genre: 'xianxia', chinese: '', preferred_english: '', reason: '' };
   }
 
-  // ====== render ======
+  // ====== compose-mode render ======
   function render() {
     if (!rows.length) {
       $tbody.innerHTML = '<tr><td colspan="5" class="cf-empty">No rows yet. Click <strong>+ Add row</strong> to begin.</td></tr>';
@@ -256,11 +411,46 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
     $submit.style.opacity = rows.length === 0 ? 0.5 : 1;
   }
 
+  // ====== receipt-mode render ======
+  function renderReceipt(submitted) {
+    $receiptCount.textContent = submitted.length;
+    $receiptNoun.textContent  = submitted.length === 1 ? 'term' : 'terms';
+    $receiptList.innerHTML = submitted.map(function (r) {
+      var reason = (r.reason || '').trim();
+      return '' +
+        '<li class="cf-receipt-item">' +
+          '<span class="cf-receipt-genre">' + escapeHTML(r.genre) + '</span>' +
+          '<span class="cf-receipt-cn">' + escapeHTML(r.chinese) + '</span>' +
+          '<span class="cf-receipt-arrow" aria-hidden="true">→</span>' +
+          '<span class="cf-receipt-en">' + escapeHTML(r.preferred_english) + '</span>' +
+          (reason ? '<p class="cf-receipt-reason">' + escapeHTML(reason) + '</p>' : '') +
+        '</li>';
+    }).join('');
+  }
+
+  function setMode(mode, submitted) {
+    if (mode === 'receipt') {
+      renderReceipt(submitted || []);
+      $compose.hidden = true;
+      $receipt.hidden = false;
+      // Scroll the success banner into view (handles long drafts gracefully).
+      var banner = $receipt.querySelector('.cf-receipt-banner');
+      if (banner && banner.scrollIntoView) {
+        banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      // Move keyboard focus to the "submit more" button so screen readers
+      // and keyboard users get an unmissable hand-off.
+      setTimeout(function () { if ($submitMore) $submitMore.focus(); }, 350);
+    } else {
+      $compose.hidden = false;
+      $receipt.hidden = true;
+    }
+  }
+
   // ====== events ======
   document.getElementById('cf-add').addEventListener('click', function () {
     rows.push(emptyRow());
     render();
-    // focus the new chinese input
     var inputs = $tbody.querySelectorAll('input[data-field="chinese"]');
     var last = inputs[inputs.length - 1];
     if (last) last.focus();
@@ -291,6 +481,14 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
     render();
   });
 
+  $submitMore.addEventListener('click', function () {
+    rows = [emptyRow()];
+    render();
+    setMode('compose');
+    var firstInput = $tbody.querySelector('input[data-field="chinese"]');
+    if (firstInput) firstInput.focus();
+  });
+
   // ====== submit ======
   function validate() {
     var bad = [];
@@ -298,7 +496,6 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
       var ok = (r.chinese || '').trim() && (r.preferred_english || '').trim();
       if (!ok) bad.push(r.id);
     });
-    // visual cue
     Array.prototype.forEach.call($tbody.querySelectorAll('tr'), function (tr) {
       tr.classList.toggle('cf-row--invalid', bad.indexOf(tr.dataset.id) !== -1);
     });
@@ -306,7 +503,6 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
   }
 
   function postOne(r) {
-    // Build form-encoded body for Google Forms `formResponse` endpoint.
     var body = new URLSearchParams();
     body.set(CONFIG.entryGenre,   r.genre);
     body.set(CONFIG.entryChinese, (r.chinese || '').trim());
@@ -314,8 +510,6 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
     if (CONFIG.entryReason && (r.reason || '').trim()) {
       body.set(CONFIG.entryReason, (r.reason || '').trim());
     }
-    // Google Forms responds with an opaque cross-origin response; `no-cors` lets us
-    // fire-and-forget without CORS errors. The data still reaches Google's backend.
     return fetch(CONFIG.formAction, {
       method: 'POST',
       mode: 'no-cors',
@@ -325,7 +519,6 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
   }
 
   function fallbackCopyAndEmail() {
-    // Pretty-print rows so the user can paste / email them manually.
     var lines = ['Genre,Chinese,Preferred English,Reason'];
     rows.forEach(function (r) {
       var quote = function (s) {
@@ -372,14 +565,25 @@ description: Submit Chinese-English glossary terms in seconds. No GitHub, no sig
     $submit.disabled = true;
     $submit.textContent = 'Submitting…';
 
+    // Snapshot the rows we're about to send so the receipt view can
+    // show them even after we reset the draft state.
+    var submittedSnapshot = rows.map(function (r) {
+      return {
+        genre: r.genre,
+        chinese: (r.chinese || '').trim(),
+        preferred_english: (r.preferred_english || '').trim(),
+        reason: (r.reason || '').trim()
+      };
+    });
+
     Promise.all(rows.map(postOne))
       .then(function () {
-        showToast('Submitted ' + rows.length + ' term' + (rows.length === 1 ? '' : 's') + '. Thank you!', 'ok');
         rows = [];
         render();
+        setMode('receipt', submittedSnapshot);
       })
       .catch(function () {
-        // With mode: no-cors, fetch only rejects on network failure. We treat that as a real failure.
+        // With mode: no-cors, fetch only rejects on network failure.
         showToast('Network error — please try again, or copy-and-email as a fallback.', 'error');
       })
       .finally(function () {
