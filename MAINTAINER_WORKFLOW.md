@@ -32,9 +32,10 @@ After the one-time setup in §0 and §3.0, every batch is just:
 │     · sync.py --apply (auto-backups *.bak.<ts>)                │
 │     · git add docs/downloads/*.csv && git commit && git push   │
 ├────────────────────────────────────────────────────────────────┤
-│  3. CLOSE THE LOOP (back in Sheet)                             │
-│     Flip just-pushed rows from `approved` → `merged` so they   │
-│     are not reprocessed next run.                              │
+│  3. AUTO-CLEANUP (handled by the script)                       │
+│     auto_sync.sh deletes the just-handled rows from the Sheet  │
+│     (ADD / REPLACE / DUP) so the review queue stays clean.     │
+│     Rejected / pending / CLASH'd rows are left in place.       │
 └────────────────────────────────────────────────────────────────┘
 ```
 

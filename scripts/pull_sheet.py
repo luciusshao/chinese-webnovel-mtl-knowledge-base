@@ -111,10 +111,18 @@ def main() -> int:
     if not rows:
         sys.exit(f"✗ sheet '{sheet_tab}' is empty (not even a header row).")
 
+    # Add a `_sheet_row` column so downstream tooling (sync.py +
+    # mark_merged.py) can locate each row in the Google Sheet by its
+    # 1-based physical row number (header is row 1, first data row is 2).
+    header = list(rows[0]) + ["_sheet_row"]
+    out_rows: List[List[str]] = [header]
+    for i, r in enumerate(rows[1:], start=2):
+        out_rows.append(list(r) + [str(i)])
+
     DEFAULT_OUT.parent.mkdir(parents=True, exist_ok=True)
     with DEFAULT_OUT.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, lineterminator="\n")
-        writer.writerows(rows)
+        writer.writerows(out_rows)
 
     n_data = len(rows) - 1  # minus header
     print(

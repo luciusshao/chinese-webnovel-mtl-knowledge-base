@@ -69,51 +69,67 @@ if grep -qE '^\s*!? *CLASH' /tmp/glossary-sync-plan.txt; then
   die "sync.py reported CLASH(es). To overwrite the existing English, change status from 'approved' to 'replace' in the Sheet. To keep the existing, set status=rejected. Then re-run."
 fi
 
-# Count ADDs and REPLACEs to decide whether there is anything to commit at all
+# Count outcomes from the dry-run plan.
 add_count="$(grep -cE '^\s*\+? *ADD\b' /tmp/glossary-sync-plan.txt || true)"
 replace_count="$(grep -cE '^\s*↻? *REPLACE\b' /tmp/glossary-sync-plan.txt || true)"
-total_changes=$((add_count + replace_count))
-if [[ "$total_changes" -eq 0 ]]; then
-  ok "nothing new to merge. Exiting cleanly."
+dup_count="$(grep -cE '^\s*~? *DUP\b' /tmp/glossary-sync-plan.txt || true)"
+csv_changes=$((add_count + replace_count))
+total_actions=$((add_count + replace_count + dup_count))
+
+if [[ "$total_actions" -eq 0 ]]; then
+  ok "nothing new to merge or clean up. Exiting cleanly."
   rm -f /tmp/glossary-sync-plan.txt
   exit 0
 fi
 
 # --- 3. apply --------------------------------------------------------------
-say "step 3/4 — applying ($add_count new, $replace_count replaced)"
+say "step 3/5 — applying ($add_count new, $replace_count replaced, $dup_count dup)"
 "$PYTHON" scripts/sync.py --apply
 
-# --- 4. commit + push ------------------------------------------------------
-# Only stage CSVs under docs/downloads — bak files and unrelated changes left alone.
+# --- 4. commit + push (only if CSVs actually changed) ----------------------
 git add 'docs/downloads/*.csv'
 
-# If somehow nothing actually changed (e.g. csv writer wrote identical bytes), don't
-# create an empty commit.
 if git diff --cached --quiet; then
-  warn "no CSV diff after sync.py --apply (nothing to commit). Done."
-  rm -f /tmp/glossary-sync-plan.txt
-  exit 0
+  if [[ "$csv_changes" -gt 0 ]]; then
+    warn "sync.py --apply ran but produced no diff (rows must already match). Nothing to commit."
+  else
+    say "step 4/5 — DUP-only run, skipping commit/push"
+  fi
+else
+  say "step 4/5 — committing"
+  parts=()
+  [[ "$add_count" -gt 0 ]] && parts+=("add $add_count term(s)")
+  [[ "$replace_count" -gt 0 ]] && parts+=("replace $replace_count term(s)")
+  msg="glossary: $(IFS=', '; echo "${parts[*]}") from submissions"
+  git commit -m "$msg" \
+    -m "Auto-merged from Google Sheet submissions via scripts/auto_sync.sh." \
+    -m "Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
+
+  if [[ "${SKIP_PUSH:-0}" == "1" ]]; then
+    warn "SKIP_PUSH=1 set — committed locally but did NOT push. (Sheet rows will NOT be flipped to merged either, since we don't want to mark merged on something that hasn't shipped yet.)"
+    rm -f /tmp/glossary-sync-plan.txt /tmp/glossary-sync-merged-rows.txt
+    exit 0
+  fi
+
+  branch="${AUTO_SYNC_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}"
+  say "pushing to origin/$branch"
+  git push origin "$branch"
 fi
 
-say "step 4/4 — committing"
-parts=()
-[[ "$add_count" -gt 0 ]] && parts+=("add $add_count term(s)")
-[[ "$replace_count" -gt 0 ]] && parts+=("replace $replace_count term(s)")
-msg="glossary: $(IFS=', '; echo "${parts[*]}") from submissions"
-git commit -m "$msg" \
-  -m "Auto-merged from Google Sheet submissions via scripts/auto_sync.sh." \
-  -m "Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
-
-if [[ "${SKIP_PUSH:-0}" == "1" ]]; then
-  warn "SKIP_PUSH=1 set — committed locally but did NOT push."
-  rm -f /tmp/glossary-sync-plan.txt
-  exit 0
+# --- 5. delete handled rows from the Sheet ---------------------------------
+# Now that the public CSVs are live (or were already in sync for DUP-only
+# runs), remove the just-handled Sheet rows so they don't show up in the
+# review queue again. Failure here is non-fatal — the worst case is the
+# reviewer sees the same rows next run and they re-no-op (DUP).
+if [[ -f /tmp/glossary-sync-merged-rows.txt ]]; then
+  say "step 5/5 — removing handled rows from Sheet"
+  if "$PYTHON" scripts/mark_merged.py; then
+    :
+  else
+    warn "mark_merged.py failed. The public CSVs are pushed and live, but the Sheet rows are still in place."
+    warn "Either fix the Sheet's share permission (Editor for the SA), or delete those rows by hand."
+  fi
 fi
-
-branch="${AUTO_SYNC_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}"
-say "pushing to origin/$branch"
-git push origin "$branch"
 
 ok "done. GitHub Pages will redeploy in ~1 minute."
-ok "now go back to the Sheet and flip those 'approved' rows to 'merged'."
 rm -f /tmp/glossary-sync-plan.txt

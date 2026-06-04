@@ -78,7 +78,14 @@ SUBMISSION_FIELD_MAP = {
     "reviewed_at": "reviewed_at",
     "notes": "_reviewer_notes",              # reviewer-supplied notes (preferred over _reason)
     "timestamp": "_timestamp",
+    "_sheet_row": "_sheet_row",              # added by pull_sheet.py — 1-based row in Google Sheet
 }
+
+# After --apply succeeds, sync.py writes the 1-based Sheet rows of every
+# successfully-handled submission here, one number per line. mark_merged.py
+# (called by auto_sync.sh after git push) reads this file and flips each
+# row's `status` cell to `merged`. Living in /tmp because it's transient.
+MERGED_ROWS_FILE = Path("/tmp/glossary-sync-merged-rows.txt")
 
 VALID_GENRES = {"xianxia", "wuxia", "xiuxian"}
 # `other` and friends will be reported but not auto-written; reviewer should
@@ -194,6 +201,7 @@ def to_public_row(submission: Dict[str, str]) -> Dict[str, str]:
         "preferred_english": (submission.get("preferred_english") or "").strip(),
         "notes":             notes,
         "_status":           (submission.get("status") or "").lower().strip(),
+        "_sheet_row":        (submission.get("_sheet_row") or "").strip(),
     }
 
 
@@ -365,8 +373,17 @@ def main() -> int:
         print(color("Dry-run finished. Re-run with --apply to write the changes.", "y"))
         return 0
 
-    if not additions and not replacements:
+    # Nothing to do at all — not even a DUP row that needs flipping. Exit clean.
+    if not (additions or replacements or duplicates):
         return 0
+
+    # Clear any stale list of "rows to mark merged" from a previous run, so
+    # mark_merged.py never picks up something that wasn't part of THIS apply.
+    try:
+        if MERGED_ROWS_FILE.exists():
+            MERGED_ROWS_FILE.unlink()
+    except OSError:
+        pass
 
     # ---------- apply: replacements first (mutate cache), then write ----------
 
@@ -410,6 +427,30 @@ def main() -> int:
     print("  4. git push")
     print()
     print(color("Then in Google Sheet, flip the just-pushed rows to status=merged so the next run skips them.", "d"))
+
+    # Record the Sheet row numbers we just synced so mark_merged.py (called
+    # by auto_sync.sh after git push) can flip them to status=merged. We
+    # include DUPs as well — they were processed (and confirmed redundant),
+    # so they should leave the review queue too.
+    merged_rows: List[str] = []
+    for genre, addrows in additions.items():
+        for r in addrows:
+            sr = (r.get("_sheet_row") or "").strip()
+            if sr:
+                merged_rows.append(sr)
+    for new_row, _existing, _target in replacements:
+        sr = (new_row.get("_sheet_row") or "").strip()
+        if sr:
+            merged_rows.append(sr)
+    for dup_row, _target in duplicates:
+        sr = (dup_row.get("_sheet_row") or "").strip()
+        if sr:
+            merged_rows.append(sr)
+    if merged_rows:
+        try:
+            MERGED_ROWS_FILE.write_text("\n".join(merged_rows) + "\n", encoding="utf-8")
+        except OSError as e:
+            print(color(f"⚠ could not write {MERGED_ROWS_FILE}: {e}", "y"))
 
     return 0
 
