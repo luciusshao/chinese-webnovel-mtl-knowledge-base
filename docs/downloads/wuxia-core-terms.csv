@@ -1,11 +1,11 @@
-genre,chinese,preferred_english,alternatives,notes
-wuxia,江湖,jianghu,martial world,often better kept as jianghu
-wuxia,武林,martial world,wuxia world,depends on tone
-wuxia,掌门,sect leader,sect master,lock one version
-wuxia,长老,elder,senior elder,hierarchy may vary
-wuxia,内力,inner force,internal energy,style choice
-wuxia,轻功,lightness skill,qinggong,both are common
-wuxia,剑法,sword art,sword technique,depends on naming style
-wuxia,刀法,blade art,saber technique,keep style aligned
-wuxia,暗器,hidden weapon,concealed weapon,common wuxia term
-wuxia,武学,martial art,martial discipline,broad category term
+genre,chinese,preferred_english,notes
+wuxia,江湖,jianghu,often better kept as jianghu
+wuxia,武林,martial world,depends on tone
+wuxia,掌门,sect leader,lock one version
+wuxia,长老,elder,hierarchy may vary
+wuxia,内力,inner force,style choice
+wuxia,轻功,lightness skill,both qinggong and lightness skill are common
+wuxia,剑法,sword art,depends on naming style
+wuxia,刀法,blade art,keep style aligned
+wuxia,暗器,hidden weapon,common wuxia term
+wuxia,武学,martial art,broad category term

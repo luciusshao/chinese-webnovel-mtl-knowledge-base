@@ -1,11 +1,11 @@
-genre,chinese,preferred_english,alternatives,notes
-xianxia,灵气,spiritual qi,qi,preserve genre feel
-xianxia,丹田,dantian,elixir field,transliteration often reads better
-xianxia,天劫,heavenly tribulation,celestial tribulation,lock one form
-xianxia,飞升,ascension,transcendence,depends on novel cosmology
-wuxia,江湖,jianghu,martial world,often better kept as jianghu
-wuxia,掌门,sect leader,sect master,lock one version
-wuxia,轻功,lightness skill,qinggong,both are common
-xiuxian,修士,cultivator,cultivation practitioner,most common default is cultivator
-xiuxian,功法,cultivation method,cultivation art,highly context-sensitive
-xiuxian,突破,breakthrough,advance,important progression term
+genre,chinese,preferred_english,notes
+xianxia,灵气,spiritual qi,preserve genre feel
+xianxia,丹田,dantian,transliteration often reads better
+xianxia,天劫,heavenly tribulation,lock one form
+xianxia,飞升,ascension,depends on novel cosmology
+wuxia,江湖,jianghu,often better kept as jianghu
+wuxia,掌门,sect leader,lock one version
+wuxia,轻功,lightness skill,both qinggong and lightness skill are common
+xiuxian,修士,cultivator,most common default is cultivator
+xiuxian,功法,cultivation method,highly context-sensitive
+xiuxian,突破,breakthrough,important progression term

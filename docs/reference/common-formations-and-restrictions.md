@@ -2,18 +2,18 @@
 
 Formation, seal, and barrier terminology is easy for MTL to blur together.
 
-| Chinese | Common English | Alternatives | Notes |
-|---|---|---|---|
-| 阵法 | formation | array | broad system term |
-| 阵盘 | array plate | formation plate | item term |
-| 阵旗 | array flag | formation flag | common tool term |
-| 禁制 | restriction | prohibition seal | common technical term |
-| 结界 | barrier | ward | protective boundary |
-| 封印 | seal | sealing mark | common mystical control term |
-| 杀阵 | killing formation | lethal array | offensive formation |
-| 幻阵 | illusion formation | illusion array | sensory deception term |
-| 困阵 | trapping formation | confinement array | control term |
-| 破阵 | break the formation | dispel the array | action phrase |
+| Chinese | Common English | Notes |
+| --- | --- | --- |
+| 阵法 | formation | broad system term |
+| 阵盘 | array plate | item term |
+| 阵旗 | array flag | common tool term |
+| 禁制 | restriction | common technical term |
+| 结界 | barrier | protective boundary |
+| 封印 | seal | common mystical control term |
+| 杀阵 | killing formation | offensive formation |
+| 幻阵 | illusion formation | sensory deception term |
+| 困阵 | trapping formation | control term |
+| 破阵 | break the formation | action phrase |
 
 ## Practical Rule
 

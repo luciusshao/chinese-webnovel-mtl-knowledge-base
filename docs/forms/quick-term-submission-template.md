@@ -9,11 +9,7 @@ Chinese term:
 
 Preferred English:
 
-Alternatives:
-
 Reason:
-
-Notes:
 ```
 
 ## Example
@@ -22,7 +18,5 @@ Notes:
 Genre: wuxia
 Chinese term: 江湖
 Preferred English: jianghu
-Alternatives: martial world
 Reason: preserves the cultural feel better in most wuxia contexts
-Notes: martial world is acceptable in explanatory contexts
 ```

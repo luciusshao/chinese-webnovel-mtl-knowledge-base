@@ -16,7 +16,6 @@ Use plain text like this:
 Genre: xianxia
 Chinese term: 本命法宝
 Preferred English: natal treasure
-Alternatives: life-bound treasure
 Reason: shorter and more common in cultivation discussions
 Notes: use consistently for the same item category
 ```

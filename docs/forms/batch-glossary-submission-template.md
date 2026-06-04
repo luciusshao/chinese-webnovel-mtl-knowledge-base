@@ -15,10 +15,10 @@ Preferred style:
 - mixed style
 
 Terms:
-| Chinese | Preferred English | Alternatives | Notes |
-|---|---|---|---|
-| 示例 | example | alt | note |
-| 示例2 | example 2 | alt | note |
+| Chinese | Preferred English | Notes |
+| --- | --- | --- |
+| 示例 | example | note |
+| 示例2 | example 2 | note |
 
 Important consistency rules:
 

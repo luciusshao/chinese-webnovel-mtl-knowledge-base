@@ -1,11 +1,11 @@
-genre,chinese,preferred_english,alternatives,notes
-xianxia,灵气,spiritual qi,qi,preserve genre feel
-xianxia,道心,Dao heart,heart of Dao,keep stable
-xianxia,丹田,dantian,elixir field,transliteration often reads better
-xianxia,法宝,magical treasure,magic treasure,common category term
-xianxia,洞府,cave residence,cave abode,depends on tone
-xianxia,机缘,fortuitous encounter,lucky chance,common xianxia term
-xianxia,炼丹,alchemy,pill refining,context-sensitive
-xianxia,灵根,spiritual root,spirit root,very common cultivation term
-xianxia,天劫,heavenly tribulation,celestial tribulation,lock one form
-xianxia,飞升,ascension,transcendence,depends on novel cosmology
+genre,chinese,preferred_english,notes
+xianxia,灵气,spiritual qi,preserve genre feel
+xianxia,道心,Dao heart,keep stable
+xianxia,丹田,dantian,transliteration often reads better
+xianxia,法宝,magical treasure,common category term
+xianxia,洞府,cave residence,depends on tone
+xianxia,机缘,fortuitous encounter,common xianxia term
+xianxia,炼丹,alchemy,context-sensitive
+xianxia,灵根,spiritual root,very common cultivation term
+xianxia,天劫,heavenly tribulation,lock one form
+xianxia,飞升,ascension,depends on novel cosmology

@@ -11,9 +11,9 @@ State what this glossary covers.
 
 ## Term Table
 
-| Chinese | Preferred English | Alternatives | Notes |
-|---|---|---|---|
-| 示例 | example | alt | short note |
+| Chinese | Preferred English | Notes |
+| --- | --- | --- |
+| 示例 | example | short note |
 
 ## Open Questions
 
