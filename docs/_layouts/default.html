@@ -6,15 +6,33 @@
     <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
     <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}" />
 
+    {%- comment -%}
+      Canonical / og:url. We strip the trailing `index.html` so the home page
+      points at the directory URL Google prefers, and rely on `absolute_url`
+      to combine site.url + site.baseurl + page.url.
+    {%- endcomment -%}
+    {% assign _canonical_path = page.url | replace: 'index.html', '' %}
+    {% assign _canonical = _canonical_path | absolute_url %}
+    <link rel="canonical" href="{{ _canonical }}" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}" />
 
     <meta name="theme-color" content="#f4ede0" />
+
+    <!-- Open Graph (Facebook, LinkedIn, Reddit preview) -->
     <meta property="og:title" content="{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}" />
     <meta property="og:description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{ _canonical }}" />
+    <meta property="og:site_name" content="{{ site.title }}" />
+
+    <!-- Twitter / X card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}" />
+    <meta name="twitter:description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}" />
   </head>
   <body>
     <header class="site-header">
@@ -38,7 +56,7 @@
           <a href="{{ '/contribute.html' | relative_url }}">Contribute</a>
           <a href="{{ '/getting-started.html' | relative_url }}">Start</a>
           <a href="{{ '/navigation.html' | relative_url }}">Docs</a>
-          <a class="top-nav__cta" href="https://www.xiandaos.com/demo">Demo →</a>
+          <a class="top-nav__cta" href="https://www.xiandaos.com/demo" target="_blank" rel="noopener noreferrer">See Demo →</a>
         </nav>
       </div>
     </header>
@@ -54,7 +72,7 @@
           <div class="footer-copy">{{ site.description }}</div>
         </div>
         <div class="footer-links">
-          <a href="https://www.xiandaos.com/demo">Demo Translation</a>
+          <a href="https://www.xiandaos.com/demo" target="_blank" rel="noopener noreferrer">Demo Translation</a>
           <a href="{{ '/glossary-browser.html' | relative_url }}">Browse Glossary</a>
           <a href="{{ '/glossary-library.html' | relative_url }}">Download CSV</a>
           <a href="{{ '/contribute.html' | relative_url }}">Submit Term</a>

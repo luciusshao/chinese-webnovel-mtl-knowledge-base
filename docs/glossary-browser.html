@@ -11,6 +11,19 @@ description: Search, filter, and export Chinese-English glossary terms for xianx
     your selection as CSV or Markdown. Everything happens in your browser — nothing is uploaded.
   </p>
 
+  <noscript>
+    <div class="gb-empty" style="padding: 16px; border: 1px solid var(--border, #d8cfbf); border-radius: 8px; margin: 12px 0;">
+      <strong>JavaScript is disabled.</strong> The search / filter / export tool above
+      needs JavaScript. You can still read the static glossaries directly:
+      <ul>
+        <li><a href="{{ '/glossary/xianxia-core-terms.html' | relative_url }}">Xianxia core terms</a> — cultivation realms, sect roles, common xianxia vocabulary.</li>
+        <li><a href="{{ '/glossary/wuxia-core-terms.html' | relative_url }}">Wuxia core terms</a> — jianghu, martial arts, wuxia honorifics.</li>
+        <li><a href="{{ '/glossary/xiuxian-core-terms.html' | relative_url }}">Xiuxian / cultivation core terms</a> — methods, breakthroughs, tribulation.</li>
+        <li><a href="{{ '/glossary-library.html' | relative_url }}">Download all glossaries as CSV</a> — open in Excel / Numbers, or paste into any LLM prompt.</li>
+      </ul>
+    </div>
+  </noscript>
+
   <div class="gb">
     <div class="gb-toolbar">
       <label class="gb-search" aria-label="Search terms">
@@ -62,6 +75,68 @@ description: Search, filter, and export Chinese-English glossary terms for xianx
     </p>
   </div>
 </section>
+
+<section class="gb-info">
+  <h2>Search Chinese-English web novel terms</h2>
+  <p>
+    The browser above lets you search across Chinese characters, pinyin in notes,
+    and preferred English translations at once — useful when an MTL output gives
+    you a romanisation like <em>jindan</em> and you want to check the recommended
+    English form (<em>Golden Core</em>) plus the original term (<em>金丹</em>).
+  </p>
+
+  <h2>Filter by genre: xianxia, wuxia, xiuxian</h2>
+  <p>
+    Each entry is tagged with one of three genres so you can narrow the table to
+    the conventions of the novel you're reading. Prefer a static page? Read the
+    standalone lists:
+    <a href="{{ '/glossary/xianxia-core-terms.html' | relative_url }}">Xianxia</a>,
+    <a href="{{ '/glossary/wuxia-core-terms.html' | relative_url }}">Wuxia</a>,
+    <a href="{{ '/glossary/xiuxian-core-terms.html' | relative_url }}">Xiuxian</a>.
+  </p>
+
+  <h2>Export glossary terms as CSV or Markdown</h2>
+  <p>
+    Tick the rows you need, then click <strong>Export selected as CSV</strong> for
+    a spreadsheet-friendly file, or <strong>Export as Markdown</strong> for a
+    pasteable table you can drop into ChatGPT, Claude, Gemini, or any LLM prompt.
+    For a ready-made starter pack instead, head to the
+    <a href="{{ '/glossary-library.html' | relative_url }}">Glossary Library</a>.
+  </p>
+
+  <h2>How to use this glossary for MTL reading</h2>
+  <p>
+    A consistent glossary is the single biggest lever for readable machine
+    translation of Chinese web novels. Pick the genre that matches your novel,
+    export the terms you'll see most often, and feed that list to your translator
+    as a glossary or system prompt. New term not on the list?
+    <a href="{{ '/contribute.html' | relative_url }}">Contribute it</a> and the
+    next reader will benefit too.
+  </p>
+</section>
+
+{%- comment -%}
+  Structured data — tells Google this page is a Chinese-English term set,
+  not just a generic search UI. Helps eligibility for the "Definitions /
+  Glossary" rich result family.
+{%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "DefinedTermSet",
+  "name": "Chinese Webnovel MTL Glossary",
+  "description": "A curated Chinese-English glossary for xianxia, wuxia, and xiuxian web novel readers using machine translation.",
+  "url": "{{ page.url | absolute_url }}",
+  "inLanguage": ["zh-Hans", "en"],
+  "keywords": "xianxia, wuxia, xiuxian, cultivation, Chinese web novel, MTL, machine translation, glossary",
+  "isAccessibleForFree": true,
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ site.title }}",
+    "url": "{{ '/' | absolute_url }}"
+  }
+}
+</script>
 
 <script>
 (function () {

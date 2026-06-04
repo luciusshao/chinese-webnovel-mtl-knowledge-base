@@ -13,7 +13,7 @@ This page is the full navigation hub for the public knowledge base.
 
 ## Demo Translation
 
-- [Open Demo Translation](https://www.xiandaos.com/demo)
+- [See Demo Translation](https://www.xiandaos.com/demo){:target="_blank" rel="noopener noreferrer"} — original sample text, glossary-aware translation (no copyrighted chapters).
 
 ## Quick Contribution
 

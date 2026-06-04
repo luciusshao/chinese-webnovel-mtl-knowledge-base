@@ -9,6 +9,36 @@ header_pages:
   - how-to-submit-to-maintainer.md
 
 # ----------------------------------------------------------------
+# SEO basics — canonical / og:url / sitemap rely on these
+# ----------------------------------------------------------------
+# `url`     = scheme + host (no trailing slash, no path)
+# `baseurl` = subpath the site is served from (GitHub Pages project site)
+# Together: <url><baseurl>/page-path
+url: "https://luciusshao.github.io"
+baseurl: "/chinese-webnovel-mtl-knowledge-base"
+
+# jekyll-sitemap ships with the github-pages gem and runs on Pages by default,
+# but listing it explicitly avoids surprise if someone slims the gem set later.
+# It writes /sitemap.xml at build time, scoped to site.url + site.baseurl.
+plugins:
+  - jekyll-sitemap
+
+# ----------------------------------------------------------------
+# SEO basics — canonical / og:url / sitemap rely on these
+# ----------------------------------------------------------------
+# `url`     = scheme + host (no trailing slash, no path)
+# `baseurl` = subpath the site is served from (GitHub Pages project site)
+# Together: <url><baseurl>/page-path
+url: "https://luciusshao.github.io"
+baseurl: "/chinese-webnovel-mtl-knowledge-base"
+
+# jekyll-sitemap ships with the github-pages gem and runs on Pages by default,
+# but listing it explicitly avoids surprise if someone slims the gem set later.
+# It writes /sitemap.xml at build time, scoped to site.url + site.baseurl.
+plugins:
+  - jekyll-sitemap
+
+# ----------------------------------------------------------------
 # Site contact
 # ----------------------------------------------------------------
 contact_email: shaoyaoru@gmail.com

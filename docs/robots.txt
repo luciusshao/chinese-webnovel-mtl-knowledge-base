@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# jekyll-sitemap writes /sitemap.xml at site root (combined site.url + site.baseurl).
+Sitemap: https://luciusshao.github.io/chinese-webnovel-mtl-knowledge-base/sitemap.xml
