@@ -1,0 +1,8 @@
+# Dependencies for scripts/pull_sheet.py (Google Sheet → submissions.csv).
+# Install with:
+#     python3 -m venv scripts/.venv
+#     scripts/.venv/bin/pip install -r scripts/requirements.txt
+#
+# scripts/sync.py itself is stdlib-only and does NOT need these packages.
+gspread>=6.0,<7.0
+google-auth>=2.20,<3.0

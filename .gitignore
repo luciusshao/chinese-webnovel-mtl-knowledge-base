@@ -1,1 +1,27 @@
 .DS_Store
+
+# macOS / editor noise
+.idea/
+.vscode/
+
+# Jekyll build artifacts
+docs/_site/
+docs/.jekyll-cache/
+docs/.sass-cache/
+docs/Gemfile.lock
+
+# Playwright MCP scratch
+.playwright-mcp/
+
+# Real Google Sheet exports — never commit user submissions.
+# scripts/inbox/submissions.example.csv is the schema template (kept in repo).
+scripts/inbox/submissions.csv
+
+# Auto-generated CSV backups from sync.py
+docs/downloads/*.bak.*
+
+# Local maintainer credentials & venv for scripts/pull_sheet.py
+scripts/.env
+scripts/.venv/
+scripts/__pycache__/
+scripts/*.pyc

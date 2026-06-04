@@ -1,0 +1,10 @@
+Timestamp,Genre,Chinese term,Preferred English,Alternative English,Reason or context,Source novel (optional),Your contact (optional),status,reviewer,reviewed_at,notes
+2026-06-04 09:00:00,xianxia,元婴,Nascent Soul,Yuanying,common cultivation realm; widely accepted,Generic,,approved,sy,2026-06-04,
+2026-06-04 09:01:00,xianxia,天劫,heavenly tribulation,celestial tribulation,already exists as the recommended form,,,approved,sy,2026-06-04,
+2026-06-04 09:02:00,xianxia,飞升,transcendence,ascension,user prefers transcendence,,,approved,sy,2026-06-04,
+2026-06-04 09:03:00,xianxia,渡劫,overcome tribulation,,verb form for going through tribulation,,,pending,,,
+2026-06-04 09:04:00,other,测试_自动化_请删除,test_automated_please_delete,,e2e test,,,approved,sy,2026-06-04,
+2026-06-04 09:05:00,wuxia,内功,inner force training,neigong,more verbose form for the practice of building internal force,,,approved,sy,2026-06-04,reviewer says ok
+2026-06-04 09:06:00,xiuxian,筑基,foundation establishment,foundation building,important entry-level realm,,,approved,sy,2026-06-04,
+2026-06-04 09:07:00,xianxia,,empty chinese,,malformed,,,approved,sy,2026-06-04,
+2026-06-04 09:08:00,wuxia,飞镖,flying dart,throwing dart,,,user@example.com,rejected,sy,2026-06-04,off-topic
