@@ -14,13 +14,15 @@ docs/Gemfile.lock
 .playwright-mcp/
 
 # Real Google Sheet exports — never commit user submissions.
+# The one-shot script writes its pulled snapshot outside the repo by default,
+# but keep ignoring the in-repo path in case someone uses it manually.
 # scripts/inbox/submissions.example.csv is the schema template (kept in repo).
 scripts/inbox/submissions.csv
 
-# Auto-generated CSV backups from sync.py
+# Auto-generated CSV backups from the sync script
 docs/downloads/*.bak.*
 
-# Local maintainer credentials & venv for scripts/pull_sheet.py
+# Local maintainer credentials & venv
 scripts/.env
 scripts/.venv/
 scripts/__pycache__/

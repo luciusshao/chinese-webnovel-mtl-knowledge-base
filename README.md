@@ -29,6 +29,7 @@ This repository is meant to be public, easy to browse, and easy to contribute to
 - [Glossary Principles](docs/glossary/glossary-principles.md)
 - [Prompt Templates](docs/prompts/basic-chapter-translation.md)
 - [Contribution Guide](CONTRIBUTING.md)
+- [Maintainer Sync README](scripts/README.md)
 - [Content Policy](docs/policies/content-policy.md)
 - [Roadmap](ROADMAP.md)
 

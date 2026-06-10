@@ -7,7 +7,7 @@
 
 ---
 
-## TL;DR — your routine in 2 steps (with auto_sync.sh)
+## TL;DR — your routine in 2 steps (with the one script)
 
 After the one-time setup in §0 and §3.0, every batch is just:
 
@@ -22,18 +22,18 @@ After the one-time setup in §0 and §3.0, every batch is just:
 │     · approved → publish as a new term                         │
 │     · replace  → overwrite the existing English with this one  │
 │     · rejected → ignore (junk / not better than existing)      │
-│     · pending  → "I'll come back". sync.py ignores it.         │
+│     · pending  → "I'll come back". the script ignores it.      │
 │     (See §2 for the full table.)                               │
 ├────────────────────────────────────────────────────────────────┤
 │  2. ONE-LINER                                                  │
-│     cd <repo> && ./scripts/auto_sync.sh                        │
+│     cd <repo> && scripts/.venv/bin/python scripts/auto_sync.sh │
 │     · pulls Sheet → submissions.csv                            │
-│     · runs sync.py dry-run, aborts if any CLASH                │
-│     · sync.py --apply (auto-backups *.bak.<ts>)                │
+│     · builds the plan, aborts if any CLASH                     │
+│     · writes CSV backups (*.bak.<ts>)                          │
 │     · git add docs/downloads/*.csv && git commit && git push   │
 ├────────────────────────────────────────────────────────────────┤
 │  3. AUTO-CLEANUP (handled by the script)                       │
-│     auto_sync.sh deletes the just-handled rows from the Sheet  │
+│     the script deletes the just-handled rows from the Sheet    │
 │     (ADD / REPLACE / DUP) so the review queue stays clean.     │
 │     Rejected / pending / CLASH'd rows are left in place.       │
 └────────────────────────────────────────────────────────────────┘
@@ -42,13 +42,12 @@ After the one-time setup in §0 and §3.0, every batch is just:
 **Volume rule of thumb**: do steps 1-3 in one sitting once a week. The shell
 step is ~10 seconds; the review is the only thing that takes time.
 
-**If `auto_sync.sh` reports a CLASH**, it stops *before* commit. Resolve in
+**If `scripts/auto_sync.sh` reports a CLASH**, it stops *before* commit. Resolve in
 the Sheet by either changing the row's `status` from `approved` to `replace`
 (adopt the new English) or to `rejected` (keep the existing English) and
 re-run. See §2 for the full table.
 
-> Want the manual flow instead? §3.2 keeps it documented (export CSV, run
-> `sync.py` by hand, git by hand). Use it if Python or the SA key is unavailable.
+> There is no longer a multi-script maintainer flow. Use the one script.
 
 ---
 
@@ -69,7 +68,7 @@ In the sheet, append four columns to the right of the form-generated columns:
 
 | Column        | Values                                                 | Purpose                                        |
 | ------------- | ------------------------------------------------------ | ---------------------------------------------- |
-| `status`      | `approved` / `replace` / `rejected` / `dup` / `merged` / `pending` / blank | Review state (only `approved` & `replace` cause writes) |
+| `status`      | `approved` / `replace` / `rejected` / `dup` / `pending` / blank | Review state (only `approved` & `replace` cause writes) |
 | `reviewer`    | your initials                                          | Who reviewed it                                |
 | `reviewed_at` | YYYY-MM-DD                                             | Date of review                                 |
 | `notes`       | free text                                              | Why approved/rejected, conflict resolution     |
@@ -133,7 +132,7 @@ The on-site form sends only **four** fields:
 | Reason (optional)   | Reason or context / 理由     | no       |
 
 Older fields in the Google Form (`Alternative English`, `Source novel`, `Your contact`)
-remain in the form schema but are **left blank by the site** and **ignored by `sync.py`**.
+remain in the form schema but are **left blank by the site** and **ignored by the sync script**.
 You can either delete them from the form for tidiness, or keep them in case you ever
 re-enable manual submissions through the live form URL.
 
@@ -156,11 +155,11 @@ re-enable manual submissions through the live form URL.
               │
        ┌──────┼──────┐
        ▼      ▼      ▼
-   approved  merged  rejected
+   approved replace rejected
        │      │
        ▼      ▼
-   append to       update `notes`
-   docs/downloads  in existing row
+   append to  overwrite existing row
+   docs/downloads  and archive old English
    /<genre>.csv
               │
               ▼
@@ -183,17 +182,16 @@ For each row, set `status` to one of these values. **Only `approved` and
 `replace` cause writes to the public CSVs**; everything else is purely an
 audit trail.
 
-| `status`   | What sync.py does                                                                  | When to use                                                                                       |
+| `status`   | What the script does                                                               | When to use                                                                                       |
 | ---------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `approved` | Append the term to `<genre>-core-terms.csv`. **Refuses to overwrite** any existing chinese (CLASH). | Fresh, useful term. Default verdict for anything you'd publish as-is.                             |
 | `replace`  | Like `approved`, but if the chinese already exists with a different English, **overwrite** it; the old English is auto-archived in the row's `notes`. | The submission proposes a clearly better translation than what's currently published. Use sparingly. |
 | `rejected` | Ignore. Row stays in the Sheet for the audit trail.                                | Trolling, copyrighted content, off-policy, one-off character names with no reuse value.            |
-| `dup`      | Ignore.                                                                            | (Optional shorthand — sync.py auto-detects exact duplicates anyway.)                              |
-| `merged`   | Ignore.                                                                            | Use this AFTER a successful run, to flip just-pushed `approved`/`replace` rows so the next sync skips them. |
+| `dup`      | Ignore.                                                                            | (Optional shorthand — the script auto-detects exact duplicates anyway.)                           |
 | `pending` (or blank) | Ignore.                                                                | Default — you haven't gotten to this row yet. There is no SLA.                                   |
 
 **Key insight**: you do not need to manually check whether a chinese already
-exists in the public CSVs. `sync.py` does that for you:
+exists in the public CSVs. The script does that for you:
 
 - exact duplicate (same chinese + same English) → silently skipped (DUP)
 - same chinese + different English + you wrote `approved` → blocked as CLASH;
@@ -209,7 +207,7 @@ So in practice your reviewing flow is just:
 3. If you already know the existing English is worse → `replace` instead.
 4. If junk → `rejected`. If unsure → leave as `pending`.
 
-That's the whole job. `sync.py` will yell at you (CLASH) only when your
+That's the whole job. The script will yell at you (CLASH) only when your
 verdict requires extra information you can fix in 1 click.
 
 ### 2.x Reasons that justify `rejected`
@@ -246,237 +244,98 @@ recommendation in one place.
 
 ## 3. Syncing approved rows to the repo
 
-You have **three paths**, in order of recommendation:
+There is now only **one maintainer path**:
 
-- **§3.0 — `auto_sync.sh`** (one-liner, recommended). Fully automates Sheet
-  pull → conflict-check → CSV write → git commit → git push.
-- **§3.1 — `sync.py` only** (semi-manual fallback). Use when the Service Account
-  flow is broken or you want to inspect the diff before pushing yourself.
-- **§3.2 — pure manual** (last resort). Edit the CSV by hand.
+- run `./scripts/auto_sync.sh`
 
-### 3.0 Path A — `auto_sync.sh` (recommended)
+The script does the whole job in one run:
 
-#### One-time setup (~15 min, do this once)
+1. pull the Google Sheet into `~/.config/glossary-sync/submissions.csv`;
+2. build the plan and stop immediately if any `CLASH` exists;
+3. write the changed `docs/downloads/*.csv` files, with `*.bak.<timestamp>` backups;
+4. commit only the changed glossary CSV files;
+5. push the current branch;
+6. delete handled rows from the Google Sheet.
+
+Handled rows means `ADD`, `REPLACE`, and `DUP`. Rejected, pending, and clash rows stay in the Sheet.
+
+### 3.0 One-time setup
 
 1. **Create a Google Cloud Service Account**
 
    - Open <https://console.cloud.google.com>, create or pick a project.
    - APIs & Services → Library → enable **Google Sheets API**.
    - APIs & Services → Credentials → Create credentials → **Service account**.
-     - Name: `glossary-sync`. No roles needed. Skip "grant users access".
-   - On the new SA's page → **Keys** tab → Add key → Create new key → **JSON**.
-   - The browser downloads a `*.json` file. Move it to a private spot:
+   - On the service account page → **Keys** → Add key → Create new key → **JSON**.
+   - Move the downloaded key to a private local directory:
+
      ```bash
      mkdir -p ~/.config/glossary-sync
      mv ~/Downloads/<project>-*.json ~/.config/glossary-sync/service-account.json
      chmod 600 ~/.config/glossary-sync/service-account.json
      ```
-   - Open the JSON and note the `client_email` field — looks like
-     `glossary-sync@<project>.iam.gserviceaccount.com`.
 
-2. **Share the Sheet with the SA**
+2. **Share the Google Sheet with the service account**
 
-   - Open the `glossary-submissions` Google Sheet.
-   - Click **Share** (top-right) → paste the `client_email` → permission
-     **Viewer** is enough → uncheck "Notify people" → Send.
+   - Open the response Sheet.
+   - Click **Share**.
+   - Add the service account `client_email`.
+   - Give it **Editor** permission.
 
-3. **Configure the repo's local `.env`**
+3. **Configure `scripts/.env`**
 
    ```bash
    cp scripts/.env.example scripts/.env
    $EDITOR scripts/.env
-   # Fill in:
-   #   SHEET_ID=<the long id from the Sheet's URL>
-   #   SHEET_TAB=Form Responses 1     (default; change if you renamed)
-   #   SA_KEY_PATH=~/.config/glossary-sync/service-account.json
    ```
 
-   `scripts/.env` is gitignored. Never commit it.
+   Fill in:
 
-4. **Install Python deps in a venv**
+   ```dotenv
+   LOCAL_WORK_DIR=~/.config/glossary-sync
+   SHEET_ID=<the long id from the Sheet URL>
+   SHEET_TAB=Form Responses 1
+   GOOGLE_SERVICE_ACCOUNT_JSON=${LOCAL_WORK_DIR}/service-account.json
+   ```
+
+4. **Install dependencies**
 
    ```bash
    python3 -m venv scripts/.venv
    scripts/.venv/bin/pip install -r scripts/requirements.txt
    ```
 
-   The venv is also gitignored.
-
-5. **Smoke test (read-only)**
-
-   ```bash
-   scripts/.venv/bin/python scripts/pull_sheet.py
-   # → ✓ pulled N row(s) from 'Form Responses 1' → scripts/inbox/submissions.csv
-   ```
-
-   If you see a 403 / "permission denied" error, double-check step 2.
-
-#### Per-batch workflow
+### 3.1 Routine run
 
 ```bash
-# 1. In the Google Sheet: review new rows, mark each row's `status`:
-#    approved | rejected | dup | merged | pending  (see §2)
+# 1. In the Google Sheet, review rows and set status:
+#    approved | replace | rejected | dup | pending
 
-# 2. From the repo root, run the one-liner:
+# 2. Run the script:
 ./scripts/auto_sync.sh
 ```
 
-That's it. The script will:
-
-1. Refuse to run if the working tree has unrelated dirty files (safety).
-2. `pull_sheet.py` → fresh `scripts/inbox/submissions.csv`.
-3. `sync.py` dry-run. If any **CLASH**, prints them and aborts.
-4. `sync.py --apply` (with auto-backups `docs/downloads/*.bak.<timestamp>`).
-5. `git add docs/downloads/*.csv && git commit -m "glossary: add N terms…"`.
-6. `git push` to the current branch.
-
-GitHub Pages redeploys within ~1 minute. Then go back to the Sheet and flip
-the just-pushed rows from `approved` → `merged` so the next run skips them.
-
-#### When the script stops short
-
-| Scenario              | What happens                                  | What to do                                                       |
-| --------------------- | --------------------------------------------- | ---------------------------------------------------------------- |
-| Working tree dirty    | Aborts before pulling Sheet                   | Commit/stash unrelated changes, re-run                           |
-| Sheet auth fails      | Aborts at step 1 with the API error           | Check `scripts/.env`; verify SA shared on Sheet                  |
-| `CLASH` in dry-run    | Aborts before commit; prints the conflicts    | In Sheet, change `approved` → `replace` (overwrite) or `rejected` (keep), then re-run |
-| Nothing to merge      | Exits cleanly (`nothing new to merge`)        | Nothing                                                          |
-| Empty diff after sync | Skips the commit (no empty commits ever)      | Nothing                                                          |
-| Push rejected         | Commit succeeded locally; push errored        | `git pull --rebase && git push`                                  |
-
-#### Trial mode
-
-Want to check what the script *would* do without pushing? Set `SKIP_PUSH=1`:
+### 3.2 Dry-run
 
 ```bash
-SKIP_PUSH=1 ./scripts/auto_sync.sh
-# Pulls, syncs, commits locally; does NOT push. Inspect with `git log -1 --stat`.
-# When happy: `git push`. When unhappy: `git reset --hard HEAD~1`.
+./scripts/auto_sync.sh --dry-run
 ```
 
-### 3.1 Path B — `scripts/sync.py` (semi-manual)
+Dry-run still refreshes the local Sheet snapshot, but it will not write glossary CSVs, commit, push, or delete Sheet rows.
 
-Zero-dependency Python 3 script. It reads a Google Sheet CSV export, picks
-only `status=approved` and `status=replace` rows, routes them to the right `docs/downloads/<genre>-core-terms.csv`,
-and **refuses to overwrite conflicts**.
+### 3.3 What happens on failure
 
-#### One-time
+| Scenario         | What happens                                        | What to do |
+| ---------------- | --------------------------------------------------- | ---------- |
+| Sheet auth fails | Stops before any glossary CSV write                 | Check `scripts/.env`, key path, and Sheet sharing |
+| `CLASH` exists   | Stops before write / commit / push / Sheet deletion | Change the row to `replace` or `rejected`, then rerun |
+| `git push` fails | Sheet rows are **not** deleted                      | Fix git and rerun the script |
+| No CSV change    | No commit is created; handled DUP rows can still be deleted | Nothing |
 
-The script lives at `scripts/sync.py`. Nothing to install.
-
-#### Per-batch workflow
-
-```bash
-# 1. Export the response sheet:
-#    Google Sheet → File → Download → Comma-separated values (.csv)
-#    Save to:  scripts/inbox/submissions.csv
-#    (This file is gitignored — it stays on your laptop.)
-
-# 2. Dry-run first to see the plan
-python3 scripts/sync.py
-#   - lists every approved/replace row as ADD / REPLACE / DUP / CLASH
-#   - shows per-file plan (+N new, ~M replaced)
-#   - exits without touching disk
-
-# 3. If the plan looks right, apply
-python3 scripts/sync.py --apply
-#   - backs up each modified CSV (docs/downloads/*.bak.<timestamp>)
-#   - appends approved rows in the canonical column order
-#   - in-place updates rows for which the reviewer set status=replace
-#   - prints next-step git commands
-
-# 4. Inspect, preview, commit
-git diff docs/downloads/
-docker restart jekyll-preview          # optional: see at http://localhost:4000
-git add docs/downloads/*.csv
-git commit -m "glossary: add N terms from submissions"
-git push
-
-# 5. Back in the Google Sheet, mark the rows you just pushed:
-#    flip status from approved/replace → merged so the next run skips them.
-#    For CLASHes you didn't resolve, leave them as-is or set to pending.
-```
-
-#### What the script handles for you
-
-| Sheet row                                                       | Outcome in CSV                                              |
-| --------------------------------------------------------------- | ----------------------------------------------------------- |
-| `status=approved`, fresh chinese                                | Appended (`+ ADD`)                                          |
-| `status=approved`, exact same chinese + same English            | Skipped (`~ DUP`)                                           |
-| `status=approved`, same chinese but different English           | **Refused** (`! CLASH`) — change to `replace` or `rejected` |
-| `status=replace`, fresh chinese                                 | Appended (`+ ADD`)                                          |
-| `status=replace`, exact same chinese + same English             | Skipped (`~ DUP`)                                           |
-| `status=replace`, same chinese but different English            | **Overwrites** existing row (`↻ REPLACE`); old English archived in `notes` |
-| `status=approved`/`replace`, missing chinese / English          | Skipped, logged as INVALID                                  |
-| `status=approved`/`replace`, genre not in xianxia/wuxia/xiuxian | Skipped (warning)                                           |
-| any other status (rejected / dup / merged / pending / blank)    | Ignored                                                     |
-
-#### Conflicts (`CLASH`)
-
-The script never overwrites unless you explicitly say `replace`. If it
-reports a conflict, your options in the Sheet:
-
-1. **Adopt the new English** → change that row's `status` from `approved`
-   to `replace`. Re-run. The old English will be auto-archived in `notes`
-   as `was: <old form>`.
-2. **Keep the existing English** → set `status=rejected`. Re-run.
-3. **Defer** → set `status=pending`. Re-run later when you've decided.
-
-#### Custom genres
-
-If a row's `genre` is something we don't ship a CSV for (e.g. `other`), the
-script warns and skips. To temporarily allow it:
+### 3.4 Local preview (optional)
 
 ```bash
-python3 scripts/sync.py --apply --include-genre other
-```
-
-The row will still need a corresponding `docs/downloads/other-core-terms.csv`
-on disk, otherwise it will create one.
-
-#### Schema reminder
-
-Expected inbox columns (Google Sheet defaults + the four review columns from §0.2):
-
-| From the form (auto)            | Added by you (§0.2)            |
-| ------------------------------- | ------------------------------ |
-| `Timestamp`                     | `status`                       |
-| `Genre`                         | `reviewer`                     |
-| `Chinese term`                  | `reviewed_at`                  |
-| `Preferred English`             | `notes`                        |
-| `Alternative English`           | (deprecated, ignored by sync.py) |
-| `Reason or context`             |                                |
-| `Source novel (optional)`       |                                |
-| `Your contact (optional)`       |                                |
-
-`scripts/inbox/submissions.example.csv` ships with the repo as a schema template.
-
-### 3.2 Path C — pure manual
-
-For one-off cases or if Python is unavailable:
-
-```bash
-# 1. pull latest
-git pull --rebase
-
-# 2. open the relevant CSV
-$EDITOR docs/downloads/xianxia-core-terms.csv   # or wuxia / xiuxian
-
-# 3. append rows in column order:
-#    genre,chinese,preferred_english,notes
-#    quote any field that contains a comma or newline.
-
-# 4. commit
-git add docs/downloads/*.csv
-git commit -m "glossary: add N <genre> terms from submissions"
-git push
-```
-
-### 3.3 Local preview (optional, applies to all paths)
-
-```bash
-docker run --rm -v "$PWD/docs":/srv/jekyll -p 4000:4000 jekyll/jekyll:4 \
-  sh -c "bundle install --quiet && jekyll serve --host 0.0.0.0"
+docker run --rm -v "$PWD/docs":/srv/jekyll -p 4000:4000 jekyll/jekyll:4   sh -c "bundle install --quiet && jekyll serve --host 0.0.0.0"
 # open http://localhost:4000/glossary-browser.html
 ```
 
@@ -512,9 +371,8 @@ You don't — submissions are anonymous by default. The on-site form does not
 ask for an email.
 
 **Q. Can I run a script to sync `approved` rows automatically?**
-Yes — see §3.0 (`scripts/auto_sync.sh`) for the recommended one-liner that
-pulls the Sheet, runs `sync.py`, commits and pushes. §3.1 covers the
-semi-manual `sync.py`-only fallback.
+Yes. Use `./scripts/auto_sync.sh`. It pulls the Sheet, updates the glossary CSVs,
+commits, pushes, and then deletes the handled rows from the Sheet.
 For a fully unattended sync (cron / GitHub Action), defer until volume
 justifies it (>20 submissions/week).
 
